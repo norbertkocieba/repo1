@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Dziennik">
+<meta name="theme-color" content="#DEDCD2">
+<title>Dziennik treningowy</title>
+<style>html,body{margin:0;background:#DEDCD2;}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js" crossorigin></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.4/babel.min.js" crossorigin></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef } = React;
+
+
+/* ---------------------------------------------------------------
+   PALETA / TYPOGRAFIA
+   --------------------------------------------------------------- */
+const C = {
+  ink: "#16211E",
+  inkSoft: "#3B4A44",
+  paper: "#DEDCD2",
+  card: "#F1EFE8",
+  line: "#C4C2B6",
+  steel: "#6E7D75",
+  signal: "#1F44C8",
+  hot: "#C6371F",
+  ok: "#2E7D53",
+};
+
+const FONTS = `
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+* { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+body { margin: 0; }
+.dt-focus:focus-visible { outline: 2px solid ${C.signal}; outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+`;
+
+const display = { fontFamily: "'Barlow Condensed', 'Arial Narrow', sans-serif" };
+const body = { fontFamily: "'IBM Plex Sans', system-ui, sans-serif" };
+const mono = { fontFamily: "'IBM Plex Mono', ui-monospace, monospace" };
+
+/* ---------------------------------------------------------------
+   PLAN TRENINGOWY
+   przerwa      – sekundy między seriami
+   przerwaPo    – sekundy po zakończeniu ćwiczenia
+   jednostronne – możliwość zapisu osobno lewa / prawa
+   bezPowtorzen – tylko jedna wartość (np. sekundy planku)
+   --------------------------------------------------------------- */
+const ROZGRZEWKA = [
+  { id: "w1", nazwa: "Bieg na bieżni", detal: "1 km, 9 → 12 km/h" },
+  { id: "w2", nazwa: "Krążenia barków i bioder", detal: "" },
+  { id: "w3", nazwa: "Bird dog", detal: "2 × 8 / stronę" },
+  { id: "w4", nazwa: "Martwy robak", detal: "2 × 8 / stronę" },
+  { id: "w6", nazwa: "Most izometryczny na piłce", detal: "30 s" },
+  { id: "w7", nazwa: "Most boczny na piłce", detal: "30 s / stronę" },
+];
+
+const PLANY = {
+  A: {
+    nazwa: "Trening A",
+    akcent: "Klatka · plecy · kaptur · ramiona",
+    cwiczenia: [
+      { id: "a1", nazwa: "Wyciskanie hantlami na skosie", detal: "15–30°", partie: "Górna klatka, przedni bark, triceps", serie: 4, zakres: "8–10", jedn: "kg", przerwa: 150, przerwaPo: 180 },
+      { id: "a2", nazwa: "Rozpiętki z wyciągu dolnego w górę", detal: "", partie: "Górna klatka (izolacja)", serie: 3, zakres: "12", jedn: "kg", przerwa: 90, przerwaPo: 150 },
+      { id: "a3", nazwa: "Wiosłowanie hantlem z podparciem", detal: "", partie: "Najszerszy grzbietu, obły większy, biceps", serie: 4, zakres: "10", jedn: "kg", przerwa: 120, przerwaPo: 180, jednostronne: true },
+      { id: "a4", nazwa: "Ściąganie drążka", detal: "", partie: "Najszerszy grzbietu, biceps", serie: 3, zakres: "10", jedn: "kg", przerwa: 120, przerwaPo: 150 },
+      { id: "a8", nazwa: "Szrugsy z hantlami", detal: "bez rotacji barków", partie: "Czworoboczny górny, dźwigacz łopatki", serie: 3, zakres: "12", jedn: "kg", przerwa: 90, przerwaPo: 120 },
+      { id: "a5", nazwa: "Triceps na wyciągu", detal: "", partie: "Triceps", serie: 3, zakres: "12", jedn: "kg", przerwa: 75, przerwaPo: 120 },
+      { id: "a9", nazwa: "Uginanie ze sztangą łamaną", detal: "", partie: "Biceps, ramienny", serie: 3, zakres: "10–12", jedn: "kg", przerwa: 75, przerwaPo: 120 },
+      { id: "a6", nazwa: "Pallof press", detal: "", partie: "Skośne brzucha, antyrotacja", serie: 3, zakres: "10", jedn: "kg", przerwa: 60, przerwaPo: 90, jednostronne: true },
+      { id: "a7", nazwa: "Plank boczny", detal: "", partie: "Skośne, czworoboczny lędźwi, pośladek średni", serie: 3, zakres: "30 s", jedn: "s", przerwa: 45, przerwaPo: 0, jednostronne: true, bezPowtorzen: true },
+    ],
+  },
+  B: {
+    nazwa: "Trening B",
+    akcent: "Klatka · barki · nogi · triceps",
+    cwiczenia: [
+      { id: "b1", nazwa: "Wyciskanie sztangą na skosie", detal: "15–30°", partie: "Górna klatka, przedni bark, triceps", serie: 4, zakres: "6–8", jedn: "kg", przerwa: 180, przerwaPo: 180 },
+      { id: "b8", nazwa: "Wyciskanie hantlami na ławce płaskiej", detal: "", partie: "Środkowa i dolna klatka, triceps", serie: 3, zakres: "10", jedn: "kg", przerwa: 120, przerwaPo: 150 },
+      { id: "b2", nazwa: "Wyciskanie hantli nad głowę siedząc", detal: "z oparciem", partie: "Barki, triceps, kapturowy", serie: 3, zakres: "10", jedn: "kg", przerwa: 120, przerwaPo: 150 },
+      { id: "b3", nazwa: "Face pull", detal: "", partie: "Tylny bark, międzyłopatkowe, rotatory", serie: 4, zakres: "15", jedn: "kg", przerwa: 60, przerwaPo: 120 },
+      { id: "b4", nazwa: "Przysiad bułgarski / suwnica", detal: "", partie: "Czworogłowe, pośladki", serie: 3, zakres: "10", jedn: "kg", przerwa: 120, przerwaPo: 180, jednostronne: true },
+      { id: "b9", nazwa: "Wyciskanie francuskie", detal: "sztanga łamana, leżąc", partie: "Triceps (głowa długa)", serie: 3, zakres: "12", jedn: "kg", przerwa: 75, przerwaPo: 120 },
+      { id: "b6", nazwa: "Farmer's walk", detal: "", partie: "Gorset, kapturowy, chwyt", serie: 3, zakres: "30–40 m", jedn: "kg", jednPowt: "m", przerwa: 90, przerwaPo: 120 },
+      { id: "b10", nazwa: "Unoszenie nóg w zwisie", detal: "kolana ugięte, bez bujania", partie: "Dolny brzuch, biodrowo-lędźwiowy", serie: 3, zakres: "15", jedn: "powt.", przerwa: 60, przerwaPo: 90, bezPowtorzen: true },
+      { id: "b11", nazwa: "Spięcia brzucha", detal: "lędźwie na podłodze", partie: "Prosty brzucha", serie: 3, zakres: "15", jedn: "powt.", przerwa: 45, przerwaPo: 0, bezPowtorzen: true },
+    ],
+  },
+};
+
+const KLUCZ = "dziennik:sesje";
+
+/* ---------------------------------------------------------------
+   POMOCNICZE
+   --------------------------------------------------------------- */
+const dzis = () => new Date().toISOString().slice(0, 10);
+const MIES = ["sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie", "wrz", "paź", "lis", "gru"];
+
+const formatData = (iso) => {
+  const [r, m, d] = iso.split("-");
+  return `${parseInt(d, 10)} ${MIES[parseInt(m, 10) - 1]} ${r}`;
+};
+
+const dniTemu = (iso) => {
+  const roznica = Math.round((new Date(dzis()) - new Date(iso)) / 86400000);
+  if (roznica === 0) return "dziś";
+  if (roznica === 1) return "wczoraj";
+  return `${roznica} dni temu`;
+};
+
+const mmss = (sekundy) => {
+  const s = Math.max(0, Math.round(sekundy));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+};
+
+const pusteSerie = () => ({ w: "", p: "", w2: "", p2: "" });
+
+const wypelniona = (s) =>
+  s && (s.w !== "" || s.p !== "" || s.w2 !== "" || s.p2 !== "");
+
+/** Tekstowy zapis jednej serii, np. „56kg×8” albo „30s L / 28s P”. */
+const opisSerii = (cw, s, strony) => {
+  const jedn = cw.jedn;
+  const jednP = cw.jednPowt || "";
+  const jedna = (w, p) => {
+    if (cw.bezPowtorzen) return `${w || "–"}${jedn}`;
+    return `${w || "–"}${jedn}×${p || "–"}${jednP}`;
+  };
+  if (strony && cw.jednostronne) {
+    return `${jedna(s.w, s.p)} L / ${jedna(s.w2, s.p2)} P`;
+  }
+  return jedna(s.w, s.p);
+};
+
+const topSeria = (serie) => {
+  const wazne = (serie || []).filter((s) => s && s.w !== "" && s.w != null);
+  if (!wazne.length) return null;
+  return wazne.reduce((a, b) => (parseFloat(b.w) > parseFloat(a.w) ? b : a));
+};
+
+/* ---------------------------------------------------------------
+   ROZPOZNAWANIE LICZB PO POLSKU
+   --------------------------------------------------------------- */
+const JEDNOSTKI = {
+  zero: 0, jeden: 1, jedna: 1, jednego: 1, jedno: 1,
+  dwa: 2, dwie: 2, dwóch: 2, dwoch: 2, dwu: 2,
+  trzy: 3, trzech: 3, cztery: 4, czterech: 4,
+  pięć: 5, piec: 5, pięciu: 5, pieciu: 5,
+  sześć: 6, szesc: 6, sześciu: 6, szesciu: 6,
+  siedem: 7, siedmiu: 7,
+  osiem: 8, ośmiu: 8, osmiu: 8,
+  dziewięć: 9, dziewiec: 9, dziewięciu: 9, dziewieciu: 9,
+};
+const NASTKI = {
+  dziesięć: 10, dziesiec: 10, dziesięciu: 10, dziesieciu: 10,
+  jedenaście: 11, jedenascie: 11, jedenastu: 11,
+  dwanaście: 12, dwanascie: 12, dwunastu: 12,
+  trzynaście: 13, trzynascie: 13, trzynastu: 13,
+  czternaście: 14, czternascie: 14, czternastu: 14,
+  piętnaście: 15, pietnascie: 15, piętnastu: 15, pietnastu: 15,
+  szesnaście: 16, szesnascie: 16, szesnastu: 16,
+  siedemnaście: 17, siedemnascie: 17, siedemnastu: 17,
+  osiemnaście: 18, osiemnascie: 18, osiemnastu: 18,
+  dziewiętnaście: 19, dziewietnascie: 19, dziewiętnastu: 19, dziewietnastu: 19,
+};
+const DZIESIATKI = {
+  dwadzieścia: 20, dwadziescia: 20, dwudziestu: 20,
+  trzydzieści: 30, trzydziesci: 30, trzydziestu: 30,
+  czterdzieści: 40, czterdziesci: 40, czterdziestu: 40,
+  pięćdziesiąt: 50, piecdziesiat: 50, pięćdziesięciu: 50,
+  sześćdziesiąt: 60, szescdziesiat: 60, sześćdziesięciu: 60,
+  siedemdziesiąt: 70, siedemdziesiat: 70, siedemdziesięciu: 70,
+  osiemdziesiąt: 80, osiemdziesiat: 80, osiemdziesięciu: 80,
+  dziewięćdziesiąt: 90, dziewiecdziesiat: 90,
+};
+const RZECZOWNIKOWE = {
+  jedynka: 1, jedynkę: 1, jedynke: 1,
+  dwójka: 2, dwojka: 2, dwójkę: 2, dwojke: 2,
+  trójka: 3, trojka: 3, trójkę: 3, trojke: 3,
+  czwórka: 4, czworka: 4, czwórkę: 4, czworke: 4,
+  piątka: 5, piatka: 5, piątkę: 5, piatke: 5,
+  szóstka: 6, szostka: 6, szóstkę: 6, szostke: 6,
+  siódemka: 7, siodemka: 7, siódemkę: 7, siodemke: 7,
+  ósemka: 8, osemka: 8, ósemkę: 8, osemke: 8,
+  dziewiątka: 9, dziewiatka: 9, dziewiątkę: 9, dziewiatke: 9,
+  dziesiątka: 10, dziesiatka: 10, dziesiątkę: 10, dziesiatke: 10,
+  dwunastka: 12, dwunastkę: 12, dwunastke: 12,
+  piętnastka: 15, pietnastka: 15,
+  dwudziestka: 20, dwudziestkę: 20, dwudziestke: 20,
+};
+const SETKI = {
+  sto: 100, dwieście: 200, dwiescie: 200, trzysta: 300, czterysta: 400,
+  pięćset: 500, piecset: 500,
+};
+
+function wyciagnijLiczby(tekst) {
+  const slowa = String(tekst).toLowerCase().replace(/[,.]/g, " ").split(/\s+/).filter(Boolean);
+  const liczby = [];
+  let biezaca = null;
+  const zamknij = () => {
+    if (biezaca != null) { liczby.push(biezaca); biezaca = null; }
+  };
+
+  for (const s of slowa) {
+    if (/^\d+$/.test(s)) { zamknij(); liczby.push(parseInt(s, 10)); continue; }
+    const wartosc = SETKI[s] ?? DZIESIATKI[s] ?? NASTKI[s] ?? RZECZOWNIKOWE[s] ?? JEDNOSTKI[s] ?? null;
+    if (wartosc != null) {
+      if (biezaca == null) biezaca = wartosc;
+      else if (wartosc < 10 && biezaca % 10 === 0) biezaca += wartosc;
+      else if (wartosc < 100 && biezaca % 100 === 0) biezaca += wartosc;
+      else { zamknij(); biezaca = wartosc; }
+      continue;
+    }
+    if (s === "pół" || s === "pol" || s === "połową" || s === "polowa") {
+      if (liczby.length && biezaca == null) liczby[liczby.length - 1] += 0.5;
+      else if (biezaca != null) biezaca += 0.5;
+      continue;
+    }
+    if (s === "i" || s === "z") continue;
+    zamknij();
+  }
+  zamknij();
+  return liczby;
+}
+
+/* ---------------------------------------------------------------
+   WARSTWA ZAPISU
+   Kolejno próbuje: pamięć artefaktu → pamięć przeglądarki → pamięć sesji.
+   --------------------------------------------------------------- */
+const magazyn = {
+  rodzaj: null,
+  szczegol: "",
+
+  async wykryj() {
+    try {
+      if (typeof window !== "undefined" && window.storage && typeof window.storage.set === "function") {
+        await window.storage.set("dziennik:test", "1");
+        this.rodzaj = "artefakt";
+        return;
+      }
+    } catch (e) {
+      this.szczegol = String(e && e.message ? e.message : e);
+    }
+    try {
+      if (typeof window !== "undefined" && window.localStorage) {
+        window.localStorage.setItem("dziennik:test", "1");
+        window.localStorage.removeItem("dziennik:test");
+        this.rodzaj = "przegladarka";
+        return;
+      }
+    } catch (e) {
+      this.szczegol = this.szczegol || String(e && e.message ? e.message : e);
+    }
+    this.rodzaj = "pamiec";
+  },
+
+  async czytaj() {
+    if (this.rodzaj === "artefakt") {
+      try {
+        const w = await window.storage.get(KLUCZ);
+        return w && w.value ? w.value : null;
+      } catch (e) { return null; }
+    }
+    if (this.rodzaj === "przegladarka") {
+      try { return window.localStorage.getItem(KLUCZ); } catch (e) { return null; }
+    }
+    return this._ulotne || null;
+  },
+
+  async pisz(tekst) {
+    if (this.rodzaj === "artefakt") {
+      for (let i = 0; i < 2; i++) {
+        try {
+          const w = await window.storage.set(KLUCZ, tekst);
+          if (w) return true;
+        } catch (e) { this.szczegol = String(e && e.message ? e.message : e); }
+        await new Promise((r) => setTimeout(r, 400));
+      }
+      return false;
+    }
+    if (this.rodzaj === "przegladarka") {
+      try { window.localStorage.setItem(KLUCZ, tekst); return true; } catch (e) { return false; }
+    }
+    this._ulotne = tekst;
+    return true;
+  },
+};
+
+const OPIS_MAGAZYNU = {
+  artefakt: { etykieta: "pamięć Claude", trwale: true, opis: "Dane są przypisane do konta i widoczne na każdym urządzeniu." },
+  przegladarka: { etykieta: "pamięć przeglądarki", trwale: true, opis: "Dane zostają w tej przeglądarce na tym urządzeniu. Nie zobaczysz ich po zalogowaniu gdzie indziej." },
+  pamiec: { etykieta: "tylko ta sesja", trwale: false, opis: "Zapis trwały nie działa w tym oknie. Po zamknięciu dane przepadną — kopiuj podsumowanie i przenieś je przez zakładkę „Wklej” w oknie, gdzie zapis działa." },
+};
+
+/* ---------------------------------------------------------------
+   APLIKACJA
+   --------------------------------------------------------------- */
+function DziennikTreningowy() {
+  const [sesje, setSesje] = useState([]);
+  const [ladowanie, setLadowanie] = useState(true);
+  const [awaria, setAwaria] = useState(null);
+  const [rodzajZapisu, setRodzajZapisu] = useState(null);
+  const [widok, setWidok] = useState("start");
+  const [aktywna, setAktywna] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      await magazyn.wykryj();
+      setRodzajZapisu(magazyn.rodzaj);
+      try {
+        const surowe = await magazyn.czytaj();
+        if (surowe) setSesje(JSON.parse(surowe));
+      } catch (e) {
+        // pierwsze uruchomienie — brak danych to normalna sytuacja
+      } finally {
+        setLadowanie(false);
+      }
+    })();
+  }, []);
+
+  const zapisz = async (noweSesje) => {
+    setSesje(noweSesje);
+    const ok = await magazyn.pisz(JSON.stringify(noweSesje));
+    setAwaria(ok ? null : { szczegol: magazyn.szczegol });
+    return ok;
+  };
+
+  const ostatniaZPlanu = (plan) =>
+    sesje.filter((s) => s.plan === plan).sort((a, b) => b.data.localeCompare(a.data))[0] || null;
+
+  const ostatnieDlaCwiczenia = (cwId, pomijajId) => {
+    const posortowane = [...sesje].sort((a, b) => b.data.localeCompare(a.data));
+    for (const s of posortowane) {
+      if (s.id === pomijajId) continue;
+      const wpis = s.wpisy?.[cwId];
+      const serie = Array.isArray(wpis) ? wpis : wpis?.serie;
+      if (serie && serie.some(wypelniona)) return { serie, data: s.data, strony: wpis?.strony };
+    }
+    return null;
+  };
+
+  const rozpocznij = (plan) => {
+    const istniejaca = sesje.find((s) => s.data === dzis() && s.plan === plan);
+    setAktywna(
+      istniejaca || {
+        id: `s_${Date.now()}`,
+        data: dzis(),
+        plan,
+        wpisy: {},
+        rozgrzewka: [],
+        notatka: "",
+      }
+    );
+    setWidok("sesja");
+  };
+
+  const zapiszSesje = async (sesja) => {
+    const bez = sesje.filter((s) => s.id !== sesja.id);
+    const ok = await zapisz([sesja, ...bez].sort((a, b) => b.data.localeCompare(a.data)));
+    if (ok) {
+      setAktywna(null);
+      setWidok("start");
+    }
+    return ok;
+  };
+
+  const dodajSesje = async (sesja) => {
+    const bez = sesje.filter((s) => !(s.data === sesja.data && s.plan === sesja.plan));
+    return zapisz([sesja, ...bez].sort((a, b) => b.data.localeCompare(a.data)));
+  };
+
+  const usunSesje = (id) => zapisz(sesje.filter((s) => s.id !== id));
+
+  if (ladowanie) {
+    return (
+      <div style={{ ...body, background: C.paper, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: C.steel }}>
+        <style>{FONTS}</style>
+        <span style={{ ...mono, fontSize: 13, letterSpacing: "0.08em" }}>WCZYTUJĘ…</span>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ ...body, background: C.paper, minHeight: "100vh", color: C.ink }}>
+      <style>{FONTS}</style>
+      <div style={{ maxWidth: 560, margin: "0 auto", padding: "0 0 96px" }}>
+        <Naglowek widok={widok} setWidok={setWidok} liczba={sesje.length} />
+
+        {<PasekAwarii rodzaj={rodzajZapisu} awaria={awaria} />}
+
+        {widok === "start" && (
+          <Start sesje={sesje} ostatniaZPlanu={ostatniaZPlanu} rozpocznij={rozpocznij} setWidok={setWidok} />
+        )}
+
+        {widok === "sesja" && aktywna && (
+          <Sesja
+            sesja={aktywna}
+            setSesja={setAktywna}
+            ostatnieDlaCwiczenia={ostatnieDlaCwiczenia}
+            zapiszSesje={zapiszSesje}
+            anuluj={() => { setAktywna(null); setWidok("start"); }}
+          />
+        )}
+
+        {widok === "historia" && <Historia sesje={sesje} usunSesje={usunSesje} setWidok={setWidok} />}
+
+        {widok === "import" && <Import dodajSesje={dodajSesje} setWidok={setWidok} />}
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------
+   PASEK AWARII ZAPISU
+   --------------------------------------------------------------- */
+function PasekAwarii({ rodzaj, awaria }) {
+  const info = OPIS_MAGAZYNU[rodzaj];
+  if (!info) return null;
+  if (info.trwale && !awaria) return null;
+
+  const alarm = !info.trwale || awaria;
+  return (
+    <div
+      style={{
+        margin: "0 16px 14px",
+        padding: "11px 13px",
+        background: alarm ? "#F7DED9" : C.card,
+        border: `1px solid ${alarm ? C.hot : C.line}`,
+        color: alarm ? C.hot : C.inkSoft,
+        fontSize: 13,
+        lineHeight: 1.5,
+      }}
+    >
+      <strong style={{ ...mono, fontSize: 11, letterSpacing: "0.08em", display: "block", marginBottom: 4 }}>
+        ZAPIS: {info.etykieta.toUpperCase()}
+      </strong>
+      {info.opis}
+      {awaria?.szczegol && (
+        <div style={{ ...mono, fontSize: 10, marginTop: 6, opacity: 0.75 }}>{awaria.szczegol}</div>
+      )}
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------
+   NAGŁÓWEK
+   --------------------------------------------------------------- */
+function Naglowek({ widok, setWidok, liczba }) {
+  const slowo =
+    liczba === 1 ? "SESJA"
+      : liczba % 10 >= 2 && liczba % 10 <= 4 && (liczba < 10 || liczba > 20) ? "SESJE"
+        : "SESJI";
+  return (
+    <div style={{ borderBottom: `2px solid ${C.ink}`, padding: "18px 16px 12px", marginBottom: 16 }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
+        <h1 style={{ ...display, margin: 0, fontSize: 30, fontWeight: 700, textTransform: "uppercase" }}>Dziennik</h1>
+        <span style={{ ...mono, fontSize: 11, color: C.steel, letterSpacing: "0.1em" }}>{liczba} {slowo}</span>
+      </div>
+      {widok !== "sesja" && (
+        <div style={{ display: "flex", gap: 18, marginTop: 10 }}>
+          {[["start", "Trening"], ["historia", "Historia"], ["import", "Wklej"]].map(([k, etykieta]) => (
+            <button
+              key={k}
+              onClick={() => setWidok(k)}
+              className="dt-focus"
+              style={{
+                ...mono, background: "none", border: "none", padding: "2px 0", cursor: "pointer",
+                fontSize: 12, letterSpacing: "0.09em", textTransform: "uppercase",
+                color: widok === k ? C.ink : C.steel,
+                borderBottom: widok === k ? `2px solid ${C.signal}` : "2px solid transparent",
+                fontWeight: widok === k ? 600 : 400,
+              }}
+            >
+              {etykieta}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------
+   EKRAN STARTOWY
+   --------------------------------------------------------------- */
+function Start({ sesje, ostatniaZPlanu, rozpocznij, setWidok }) {
+  return (
+    <div style={{ padding: "0 16px" }}>
+      {["A", "B"].map((plan) => {
+        const ost = ostatniaZPlanu(plan);
+        const p = PLANY[plan];
+        return (
+          <button
+            key={plan}
+            onClick={() => rozpocznij(plan)}
+            className="dt-focus"
+            style={{
+              width: "100%", textAlign: "left", background: C.card,
+              border: `1px solid ${C.line}`, borderLeft: `4px solid ${C.ink}`,
+              padding: "16px 16px 14px", marginBottom: 12, cursor: "pointer", display: "block",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10 }}>
+              <span style={{ ...display, fontSize: 26, fontWeight: 700, textTransform: "uppercase", lineHeight: 1 }}>{p.nazwa}</span>
+              <span style={{ ...mono, fontSize: 11, color: ost ? C.steel : C.signal, whiteSpace: "nowrap" }}>
+                {ost ? dniTemu(ost.data) : "PIERWSZY RAZ"}
+              </span>
+            </div>
+            <div style={{ fontSize: 13, color: C.inkSoft, marginTop: 6 }}>{p.akcent}</div>
+            <div style={{ ...mono, fontSize: 11, color: C.steel, marginTop: 8 }}>{p.cwiczenia.length} ĆWICZEŃ</div>
+          </button>
+        );
+      })}
+
+      {sesje.length > 0 && (
+        <div style={{ marginTop: 26 }}>
+          <div style={{ ...mono, fontSize: 11, letterSpacing: "0.12em", color: C.steel, marginBottom: 10 }}>OSTATNIO</div>
+          {sesje.slice(0, 3).map((s) => (
+            <div key={s.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 0", borderBottom: `1px solid ${C.line}`, fontSize: 14 }}>
+              <span>
+                <strong style={{ ...display, fontSize: 17 }}>{s.plan}</strong>
+                <span style={{ color: C.inkSoft, marginLeft: 10 }}>{formatData(s.data)}</span>
+              </span>
+              <span style={{ ...mono, fontSize: 11, color: C.steel }}>{dniTemu(s.data)}</span>
+            </div>
+          ))}
+          <button
+            onClick={() => setWidok("historia")}
+            className="dt-focus"
+            style={{ ...mono, background: "none", border: "none", color: C.signal, fontSize: 12, padding: "12px 0", cursor: "pointer" }}
+          >
+            ZOBACZ WSZYSTKIE →
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------
+   STOPER PRZERWY
+   --------------------------------------------------------------- */
+function Stoper({ przerwa, przerwaPo }) {
+  const [koniec, setKoniec] = useState(null);
+  const [teraz, setTeraz] = useState(Date.now());
+  const [etykieta, setEtykieta] = useState("");
+
+  useEffect(() => {
+    if (!koniec) return;
+    const i = setInterval(() => setTeraz(Date.now()), 250);
+    return () => clearInterval(i);
+  }, [koniec]);
+
+  const pozostalo = koniec ? (koniec - teraz) / 1000 : 0;
+  const skonczone = koniec && pozostalo <= 0;
+
+  const uruchom = (sekundy, opis) => {
+    setEtykieta(opis);
+    setKoniec(Date.now() + sekundy * 1000);
+    setTeraz(Date.now());
+    if (navigator.vibrate) navigator.vibrate(30);
+  };
+
+  if (koniec) {
+    return (
+      <button
+        onClick={() => setKoniec(null)}
+        className="dt-focus"
+        style={{
+          ...mono, width: "100%", marginTop: 10, cursor: "pointer",
+          background: skonczone ? C.ok : C.ink, color: "#FFFFFF", border: "none",
+          padding: "13px 0", fontSize: 15, fontWeight: 700, letterSpacing: "0.06em",
+        }}
+      >
+        {skonczone ? `✓ ${etykieta.toUpperCase()} — KONIEC` : `${etykieta.toUpperCase()}  ${mmss(pozostalo)}`}
+      </button>
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", gap: 7, marginTop: 10 }}>
+      <button
+        onClick={() => uruchom(przerwa, "przerwa")}
+        className="dt-focus"
+        style={{ ...mono, flex: 1, background: "transparent", color: C.signal, border: `1px solid ${C.signal}`, padding: "11px 0", fontSize: 11, letterSpacing: "0.05em", cursor: "pointer", fontWeight: 600 }}
+      >
+        ⏱ SERIA {mmss(przerwa)}
+      </button>
+      {przerwaPo > 0 && (
+        <button
+          onClick={() => uruchom(przerwaPo, "po ćwiczeniu")}
+          className="dt-focus"
+          style={{ ...mono, flex: 1, background: "transparent", color: C.steel, border: `1px solid ${C.line}`, padding: "11px 0", fontSize: 11, letterSpacing: "0.05em", cursor: "pointer" }}
+        >
+          ⏱ ĆWICZENIE {mmss(przerwaPo)}
+        </button>
+      )}
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------
+   SESJA TRENINGOWA
+   --------------------------------------------------------------- */
+function Sesja({ sesja, setSesja, ostatnieDlaCwiczenia, zapiszSesje, anuluj }) {
+  const plan = PLANY[sesja.plan];
+  const [pokazPodsumowanie, setPokazPodsumowanie] = useState(false);
+
+  const wpisCwiczenia = (cwId) => {
+    const w = sesja.wpisy[cwId];
+    if (Array.isArray(w)) return { serie: w, strony: false };
+    return w || { serie: [], strony: false };
+  };
+
+  const ustawWpis = (cwId, nowyWpis) => {
+    setSesja({ ...sesja, wpisy: { ...sesja.wpisy, [cwId]: nowyWpis } });
+  };
+
+  const ustawSerie = (cwId, idx, pole, wartosc) => {
+    const wpis = wpisCwiczenia(cwId);
+    const serie = [...wpis.serie];
+    while (serie.length <= idx) serie.push(pusteSerie());
+    serie[idx] = { ...pusteSerie(), ...serie[idx], [pole]: wartosc };
+    ustawWpis(cwId, { ...wpis, serie });
+  };
+
+  const przelaczStrony = (cwId) => {
+    const wpis = wpisCwiczenia(cwId);
+    ustawWpis(cwId, { ...wpis, strony: !wpis.strony });
+  };
+
+  const przelaczRozgrzewke = (id) => {
+    const lista = sesja.rozgrzewka || [];
+    setSesja({ ...sesja, rozgrzewka: lista.includes(id) ? lista.filter((x) => x !== id) : [...lista, id] });
+  };
+
+  const tekstPodsumowania = () => {
+    const linie = [`${plan.nazwa} — ${formatData(sesja.data)}`, ""];
+    plan.cwiczenia.forEach((cw) => {
+      const wpis = wpisCwiczenia(cw.id);
+      const serie = wpis.serie.filter(wypelniona);
+      if (!serie.length) return;
+      linie.push(`${cw.nazwa}: ${serie.map((s) => opisSerii(cw, s, wpis.strony)).join("  ")}`);
+    });
+    if (sesja.notatka) linie.push("", `Notatka: ${sesja.notatka}`);
+    return linie.join("\n");
+  };
+
+  return (
+    <div style={{ padding: "0 16px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+        <h2 style={{ ...display, margin: 0, fontSize: 27, fontWeight: 700, textTransform: "uppercase" }}>{plan.nazwa}</h2>
+        <button onClick={anuluj} className="dt-focus" style={{ ...mono, background: "none", border: "none", color: C.steel, fontSize: 12, cursor: "pointer", padding: 4 }}>
+          ✕ WYJDŹ
+        </button>
+      </div>
+      <div style={{ ...mono, fontSize: 11, color: C.steel, marginBottom: 18 }}>{formatData(sesja.data).toUpperCase()}</div>
+
+      <Rozgrzewka zaznaczone={sesja.rozgrzewka || []} przelacz={przelaczRozgrzewke} />
+
+      {plan.cwiczenia.map((cw, i) => (
+        <Cwiczenie
+          key={cw.id}
+          numer={i + 1}
+          cw={cw}
+          wpis={wpisCwiczenia(cw.id)}
+          ustawSerie={ustawSerie}
+          przelaczStrony={przelaczStrony}
+          ostatnie={ostatnieDlaCwiczenia(cw.id, sesja.id)}
+        />
+      ))}
+
+      <div style={{ marginTop: 22 }}>
+        <label style={{ ...mono, fontSize: 11, letterSpacing: "0.1em", color: C.steel, display: "block", marginBottom: 6 }}>NOTATKA</label>
+        <textarea
+          value={sesja.notatka || ""}
+          onChange={(e) => setSesja({ ...sesja, notatka: e.target.value })}
+          placeholder="Jak się czuły lędźwie, barki, kolana? Co zmienić następnym razem?"
+          className="dt-focus"
+          rows={3}
+          style={{ ...body, width: "100%", background: C.card, border: `1px solid ${C.line}`, padding: 11, fontSize: 14, color: C.ink, resize: "vertical" }}
+        />
+      </div>
+
+      <button
+        onClick={() => zapiszSesje(sesja)}
+        className="dt-focus"
+        style={{ ...display, width: "100%", marginTop: 18, background: C.ink, color: C.paper, border: "none", padding: "17px 0", fontSize: 20, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer" }}
+      >
+        Zapisz trening
+      </button>
+
+      <button
+        onClick={() => setPokazPodsumowanie(!pokazPodsumowanie)}
+        className="dt-focus"
+        style={{ ...mono, background: "none", border: "none", color: C.signal, fontSize: 12, padding: "14px 0", cursor: "pointer" }}
+      >
+        {pokazPodsumowanie ? "UKRYJ PODSUMOWANIE" : "PODSUMOWANIE DO SKOPIOWANIA"}
+      </button>
+
+      {pokazPodsumowanie && (
+        <textarea
+          readOnly
+          value={tekstPodsumowania()}
+          onFocus={(e) => e.target.select()}
+          rows={10}
+          style={{ ...mono, width: "100%", background: C.card, border: `1px solid ${C.line}`, padding: 11, fontSize: 12, color: C.inkSoft, lineHeight: 1.6 }}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------
+   ROZGRZEWKA
+   --------------------------------------------------------------- */
+function Rozgrzewka({ zaznaczone, przelacz }) {
+  const [otwarte, setOtwarte] = useState(false);
+  const gotowe = zaznaczone.length;
+
+  return (
+    <div style={{ border: `1px solid ${C.line}`, background: C.card, marginBottom: 20 }}>
+      <button
+        onClick={() => setOtwarte(!otwarte)}
+        className="dt-focus"
+        style={{ width: "100%", background: "none", border: "none", padding: "13px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}
+      >
+        <span style={{ ...display, fontSize: 17, fontWeight: 600, textTransform: "uppercase" }}>Rozgrzewka i gorset</span>
+        <span style={{ ...mono, fontSize: 11, color: gotowe === ROZGRZEWKA.length ? C.ok : C.steel }}>
+          {gotowe}/{ROZGRZEWKA.length} {otwarte ? "▲" : "▼"}
+        </span>
+      </button>
+
+      {otwarte && (
+        <div style={{ padding: "0 14px 12px" }}>
+          {ROZGRZEWKA.map((p) => {
+            const zrobione = zaznaczone.includes(p.id);
+            return (
+              <button
+                key={p.id}
+                onClick={() => przelacz(p.id)}
+                className="dt-focus"
+                style={{ width: "100%", display: "flex", alignItems: "center", gap: 11, background: "none", border: "none", borderTop: `1px solid ${C.line}`, padding: "11px 0", cursor: "pointer", textAlign: "left" }}
+              >
+                <span style={{ width: 19, height: 19, flexShrink: 0, border: `2px solid ${zrobione ? C.ok : C.steel}`, background: zrobione ? C.ok : "transparent", color: C.card, fontSize: 12, lineHeight: "15px", textAlign: "center", fontWeight: 700 }}>
+                  {zrobione ? "✓" : ""}
+                </span>
+                <span style={{ fontSize: 14, color: zrobione ? C.steel : C.ink, textDecoration: zrobione ? "line-through" : "none" }}>
+                  {p.nazwa}
+                  {p.detal && <span style={{ ...mono, fontSize: 11, color: C.steel, marginLeft: 8 }}>{p.detal}</span>}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------
+   POJEDYNCZE ĆWICZENIE
+   --------------------------------------------------------------- */
+function Cwiczenie({ numer, cw, wpis, ustawSerie, przelaczStrony, ostatnie }) {
+  const serie = wpis.serie || [];
+  const ostTop = ostatnie ? topSeria(ostatnie.serie) : null;
+  const terazTop = topSeria(serie);
+  const rekord =
+    ostTop && terazTop && parseFloat(terazTop.w) > parseFloat(ostTop.w)
+      ? (parseFloat(terazTop.w) - parseFloat(ostTop.w)).toFixed(1).replace(/\.0$/, "")
+      : null;
+
+  return (
+    <div style={{ marginBottom: 18, background: C.card, border: `1px solid ${C.line}`, padding: "13px 14px 12px" }}>
+      <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+        <span style={{ ...mono, fontSize: 12, color: C.steel, fontWeight: 600, paddingTop: 3, minWidth: 16 }}>{numer}</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ ...display, fontSize: 19, fontWeight: 600, lineHeight: 1.15 }}>
+            {cw.nazwa}
+            {cw.detal && <span style={{ ...mono, fontSize: 11, color: C.steel, marginLeft: 7, fontWeight: 400 }}>{cw.detal}</span>}
+          </div>
+          <div style={{ fontSize: 11.5, color: C.steel, marginTop: 3, lineHeight: 1.35 }}>{cw.partie}</div>
+          <div style={{ ...mono, fontSize: 11, color: C.inkSoft, marginTop: 6 }}>
+            CEL: {cw.serie} × {cw.zakres}
+            <span style={{ color: C.steel }}> · PRZERWA {mmss(cw.przerwa)}</span>
+            {rekord && <span style={{ color: C.hot, fontWeight: 700, marginLeft: 8 }}>+{rekord} {cw.jedn}</span>}
+          </div>
+        </div>
+      </div>
+
+      {cw.jednostronne && (
+        <button
+          onClick={() => przelaczStrony(cw.id)}
+          className="dt-focus"
+          style={{ ...mono, background: "none", border: "none", color: wpis.strony ? C.signal : C.steel, fontSize: 11, padding: "9px 0 2px", cursor: "pointer", letterSpacing: "0.04em" }}
+        >
+          {wpis.strony ? "◉ LEWA I PRAWA OSOBNO" : "○ ZAPISZ STRONY OSOBNO"}
+        </button>
+      )}
+
+      {ostatnie && (
+        <div style={{ ...mono, fontSize: 11, color: C.steel, marginTop: 9, paddingTop: 8, borderTop: `1px dashed ${C.line}`, lineHeight: 1.6 }}>
+          <span style={{ color: C.signal }}>OSTATNIO</span> ({dniTemu(ostatnie.data)}):{" "}
+          {ostatnie.serie.filter(wypelniona).map((s) => opisSerii(cw, s, ostatnie.strony)).join("  ")}
+        </div>
+      )}
+
+      <div style={{ marginTop: 11 }}>
+        {Array.from({ length: cw.serie }).map((_, i) => {
+          const s = { ...pusteSerie(), ...(serie[i] || {}) };
+          const ostS = ostatnie?.serie?.[i];
+          return (
+            <div key={i} style={{ marginBottom: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ ...mono, fontSize: 11, color: C.steel, width: 30, flexShrink: 0 }}>
+                  {wpis.strony ? `${i + 1}L` : `S${i + 1}`}
+                </span>
+                <Pole wartosc={s.w} zmien={(v) => ustawSerie(cw.id, i, "w", v)} jedn={cw.jedn} duch={ostS?.w} />
+                {!cw.bezPowtorzen && (
+                  <>
+                    <span style={{ ...mono, color: C.steel, fontSize: 13 }}>×</span>
+                    <Pole wartosc={s.p} zmien={(v) => ustawSerie(cw.id, i, "p", v)} jedn={cw.jednPowt || "powt."} duch={ostS?.p} />
+                  </>
+                )}
+              </div>
+
+              {wpis.strony && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 5 }}>
+                  <span style={{ ...mono, fontSize: 11, color: C.steel, width: 30, flexShrink: 0 }}>{i + 1}P</span>
+                  <Pole wartosc={s.w2} zmien={(v) => ustawSerie(cw.id, i, "w2", v)} jedn={cw.jedn} duch={ostS?.w2} />
+                  {!cw.bezPowtorzen && (
+                    <>
+                      <span style={{ ...mono, color: C.steel, fontSize: 13 }}>×</span>
+                      <Pole wartosc={s.p2} zmien={(v) => ustawSerie(cw.id, i, "p2", v)} jedn={cw.jednPowt || "powt."} duch={ostS?.p2} />
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <Stoper przerwa={cw.przerwa} przerwaPo={cw.przerwaPo} />
+    </div>
+  );
+}
+
+function Pole({ wartosc, zmien, jedn, duch }) {
+  const znormalizuj = (surowa) => {
+    const tekst = String(surowa ?? "").trim();
+    if (tekst === "") return null;
+    if (/^\d+([.,]\d+)?$/.test(tekst)) return null;
+    const liczby = wyciagnijLiczby(tekst);
+    return liczby.length ? String(liczby[0]) : null;
+  };
+
+  const zatwierdz = () => {
+    const liczba = znormalizuj(wartosc);
+    if (liczba != null) zmien(liczba);
+  };
+
+  const podglad = znormalizuj(wartosc);
+
+  return (
+    <div style={{ flex: 1, position: "relative", display: "flex", alignItems: "center" }}>
+      <input
+        type="text"
+        inputMode="text"
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
+        spellCheck={false}
+        value={wartosc}
+        onChange={(e) => zmien(e.target.value)}
+        onBlur={zatwierdz}
+        onKeyDown={(e) => { if (e.key === "Enter") { zatwierdz(); e.target.blur(); } }}
+        placeholder={duch != null && duch !== "" ? String(duch) : "–"}
+        className="dt-focus"
+        style={{ ...mono, width: "100%", background: "#FFFFFF", border: `1px solid ${C.line}`, padding: "11px 36px 11px 11px", fontSize: 16, color: C.ink, fontWeight: 600 }}
+      />
+      {podglad != null ? (
+        <span style={{ ...mono, position: "absolute", right: 8, fontSize: 12, color: C.ok, pointerEvents: "none", fontWeight: 700, background: "#FFFFFF", paddingLeft: 4 }}>
+          = {podglad}
+        </span>
+      ) : (
+        <span style={{ ...mono, position: "absolute", right: 10, fontSize: 10, color: C.steel, pointerEvents: "none" }}>{jedn}</span>
+      )}
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------
+   IMPORT Z TEKSTU
+   --------------------------------------------------------------- */
+function Import({ dodajSesje, setWidok }) {
+  const [tekst, setTekst] = useState("");
+  const [plan, setPlan] = useState("A");
+  const [data, setData] = useState(dzis());
+  const [status, setStatus] = useState(null);
+
+  const parsuj = () => {
+    const cwiczenia = PLANY[plan].cwiczenia;
+    const wpisy = {};
+    let znalezione = 0;
+    let notatka = "";
+
+    tekst.split("\n").forEach((linia) => {
+      const czysta = linia.trim();
+      if (!czysta) return;
+      if (/^notatka\s*:/i.test(czysta)) {
+        notatka = czysta.replace(/^notatka\s*:\s*/i, "");
+        return;
+      }
+      const podzial = czysta.indexOf(":");
+      if (podzial < 0) return;
+      const nazwa = czysta.slice(0, podzial).trim().toLowerCase();
+      const reszta = czysta.slice(podzial + 1);
+
+      const cw = cwiczenia.find(
+        (c) => c.nazwa.toLowerCase() === nazwa || c.nazwa.toLowerCase().startsWith(nazwa.slice(0, 12))
+      );
+      if (!cw) return;
+
+      const serie = [];
+      const wzor = /(\d+(?:[.,]\d+)?)\s*(?:kg|s|m)?\s*[×x*]\s*(\d+(?:[.,]\d+)?)/gi;
+      let dop;
+      while ((dop = wzor.exec(reszta)) !== null) {
+        serie.push({ ...pusteSerie(), w: dop[1].replace(",", "."), p: dop[2].replace(",", ".") });
+      }
+      if (!serie.length) {
+        const same = reszta.match(/(\d+(?:[.,]\d+)?)\s*(?:kg|s|m)/gi);
+        if (same) same.forEach((x) => serie.push({ ...pusteSerie(), w: x.replace(/[^\d.,]/g, "").replace(",", "."), p: "" }));
+      }
+      if (serie.length) {
+        if (cw.bezPowtorzen) serie.forEach((s) => { s.p = ""; });
+        wpisy[cw.id] = { serie, strony: false };
+        znalezione++;
+      }
+    });
+
+    return { wpisy, znalezione, notatka };
+  };
+
+  const zapisz = async () => {
+    const { wpisy, znalezione, notatka } = parsuj();
+    if (!znalezione) {
+      setStatus({ typ: "blad", tekst: "Nie rozpoznałem żadnego ćwiczenia. Sprawdź, czy nazwy zgadzają się z planem i czy po nazwie jest dwukropek." });
+      return;
+    }
+    const ok = await dodajSesje({
+      id: `s_${Date.now()}`,
+      data,
+      plan,
+      wpisy,
+      rozgrzewka: [],
+      notatka,
+    });
+    setStatus(
+      ok
+        ? { typ: "ok", tekst: `Zapisano ${znalezione} ćwiczeń.` }
+        : { typ: "blad", tekst: "Zapis się nie powiódł — pamięć jest niedostępna w tym oknie." }
+    );
+    if (ok) setTekst("");
+  };
+
+  return (
+    <div style={{ padding: "0 16px" }}>
+      <p style={{ fontSize: 13.5, color: C.inkSoft, lineHeight: 1.55, marginTop: 0 }}>
+        Wklej trening zapisany wcześniej w tekście — w formacie <em>nazwa ćwiczenia: 56kg×8 56kg×8</em>, każde ćwiczenie w osobnej linii.
+      </p>
+
+      <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+        {["A", "B"].map((p) => (
+          <button
+            key={p}
+            onClick={() => setPlan(p)}
+            className="dt-focus"
+            style={{ ...mono, flex: 1, padding: "11px 0", fontSize: 12, cursor: "pointer", background: plan === p ? C.ink : "transparent", color: plan === p ? C.paper : C.ink, border: `1px solid ${plan === p ? C.ink : C.line}`, fontWeight: 600 }}
+          >
+            TRENING {p}
+          </button>
+        ))}
+      </div>
+
+      <input
+        type="date"
+        value={data}
+        onChange={(e) => setData(e.target.value)}
+        className="dt-focus"
+        style={{ ...mono, width: "100%", padding: "11px", fontSize: 14, border: `1px solid ${C.line}`, background: "#FFFFFF", color: C.ink, marginBottom: 10 }}
+      />
+
+      <textarea
+        value={tekst}
+        onChange={(e) => setTekst(e.target.value)}
+        rows={12}
+        placeholder={"Wyciskanie hantlami na skosie: 56kg×8  56kg×8\nŚciąganie drążka: 52kg×10  52kg×10"}
+        className="dt-focus"
+        style={{ ...mono, width: "100%", background: "#FFFFFF", border: `1px solid ${C.line}`, padding: 11, fontSize: 13, color: C.ink, lineHeight: 1.6, resize: "vertical" }}
+      />
+
+      <button
+        onClick={zapisz}
+        className="dt-focus"
+        style={{ ...display, width: "100%", marginTop: 12, background: C.ink, color: C.paper, border: "none", padding: "15px 0", fontSize: 18, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer" }}
+      >
+        Wczytaj trening
+      </button>
+
+      {status && (
+        <div style={{ ...mono, fontSize: 12, marginTop: 12, color: status.typ === "ok" ? C.ok : C.hot, lineHeight: 1.6 }}>
+          {status.tekst}
+        </div>
+      )}
+
+      <button
+        onClick={() => setWidok("historia")}
+        className="dt-focus"
+        style={{ ...mono, background: "none", border: "none", color: C.signal, fontSize: 12, padding: "14px 0", cursor: "pointer" }}
+      >
+        PRZEJDŹ DO HISTORII →
+      </button>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------
+   HISTORIA
+   --------------------------------------------------------------- */
+function Historia({ sesje, usunSesje, setWidok }) {
+  const [rozwiniete, setRozwiniete] = useState(null);
+  const [doUsuniecia, setDoUsuniecia] = useState(null);
+
+  if (!sesje.length) {
+    return (
+      <div style={{ padding: "0 16px" }}>
+        <p style={{ fontSize: 14, color: C.inkSoft, lineHeight: 1.55 }}>
+          Nie ma jeszcze żadnych zapisanych treningów.
+        </p>
+        <button onClick={() => setWidok("start")} className="dt-focus" style={{ ...mono, background: "none", border: "none", color: C.signal, fontSize: 12, padding: "6px 0", cursor: "pointer" }}>
+          ← WRÓĆ DO TRENINGÓW
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding: "0 16px" }}>
+      {sesje.map((s) => {
+        const plan = PLANY[s.plan];
+        if (!plan) return null;
+        const otwarte = rozwiniete === s.id;
+        const dane = plan.cwiczenia
+          .map((cw) => {
+            const w = s.wpisy?.[cw.id];
+            const serie = Array.isArray(w) ? w : w?.serie;
+            const strony = Array.isArray(w) ? false : w?.strony;
+            const wypelnione = (serie || []).filter(wypelniona);
+            return wypelnione.length ? { cw, serie: wypelnione, strony } : null;
+          })
+          .filter(Boolean);
+
+        return (
+          <div key={s.id} style={{ borderBottom: `1px solid ${C.line}`, padding: "13px 0" }}>
+            <button
+              onClick={() => setRozwiniete(otwarte ? null : s.id)}
+              className="dt-focus"
+              style={{ width: "100%", background: "none", border: "none", padding: 0, display: "flex", justifyContent: "space-between", alignItems: "baseline", cursor: "pointer", textAlign: "left" }}
+            >
+              <span>
+                <span style={{ ...display, fontSize: 20, fontWeight: 700, textTransform: "uppercase" }}>{plan.nazwa}</span>
+                <span style={{ fontSize: 13, color: C.inkSoft, marginLeft: 10 }}>{formatData(s.data)}</span>
+              </span>
+              <span style={{ ...mono, fontSize: 11, color: C.steel }}>{dane.length} ĆW. {otwarte ? "▲" : "▼"}</span>
+            </button>
+
+            {otwarte && (
+              <div style={{ marginTop: 11 }}>
+                {dane.map(({ cw, serie, strony }) => (
+                  <div key={cw.id} style={{ marginBottom: 9 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 500 }}>{cw.nazwa}</div>
+                    <div style={{ ...mono, fontSize: 12, color: C.inkSoft, marginTop: 2, lineHeight: 1.6 }}>
+                      {serie.map((x) => opisSerii(cw, x, strony)).join("   ")}
+                    </div>
+                  </div>
+                ))}
+                {s.notatka && (
+                  <div style={{ fontSize: 13, color: C.inkSoft, marginTop: 10, paddingLeft: 10, borderLeft: `2px solid ${C.signal}`, lineHeight: 1.5 }}>
+                    {s.notatka}
+                  </div>
+                )}
+                {doUsuniecia === s.id ? (
+                  <div style={{ display: "flex", gap: 14, marginTop: 12, alignItems: "center" }}>
+                    <span style={{ ...mono, fontSize: 11, color: C.hot }}>USUNĄĆ NA STAŁE?</span>
+                    <button onClick={() => { usunSesje(s.id); setDoUsuniecia(null); }} className="dt-focus" style={{ ...mono, background: C.hot, color: "#fff", border: "none", padding: "6px 12px", fontSize: 11, cursor: "pointer" }}>
+                      TAK, USUŃ
+                    </button>
+                    <button onClick={() => setDoUsuniecia(null)} className="dt-focus" style={{ ...mono, background: "none", border: "none", color: C.steel, fontSize: 11, cursor: "pointer" }}>
+                      ANULUJ
+                    </button>
+                  </div>
+                ) : (
+                  <button onClick={() => setDoUsuniecia(s.id)} className="dt-focus" style={{ ...mono, background: "none", border: "none", color: C.steel, fontSize: 11, padding: "10px 0 0", cursor: "pointer" }}>
+                    USUŃ TEN TRENING
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+
+ReactDOM.createRoot(document.getElementById("root")).render(<DziennikTreningowy />);
+</script>
+</body>
+</html>
