@@ -97,9 +97,76 @@ const PLANY = {
 
 const KLUCZ = "dziennik:sesje";
 const KLUCZ_WSK = "dziennik:wskazowki";
+const KLUCZ_GH = "dziennik:github";
 
-const WERSJA = "1.3";
+const WERSJA = "1.4";
 const DATA_WERSJI = "2026-08-27";
+
+/* ---------------------------------------------------------------
+   SYNCHRONIZACJA Z GITHUBEM
+   Dane trzymane są w pliku JSON w prywatnym repozytorium.
+   --------------------------------------------------------------- */
+const b64 = {
+  koduj(tekst) {
+    const bajty = new TextEncoder().encode(tekst);
+    let s = "";
+    for (let i = 0; i < bajty.length; i += 0x8000) {
+      s += String.fromCharCode.apply(null, bajty.subarray(i, i + 0x8000));
+    }
+    return btoa(s);
+  },
+  dekoduj(dane) {
+    const czyste = String(dane).replace(/\s/g, "");
+    const bajty = Uint8Array.from(atob(czyste), (z) => z.charCodeAt(0));
+    return new TextDecoder().decode(bajty);
+  },
+};
+
+const github = {
+  adres(k) {
+    return `https://api.github.com/repos/${k.wlasciciel}/${k.repo}/contents/${k.sciezka}`;
+  },
+
+  naglowki(k) {
+    return {
+      Authorization: `Bearer ${k.token}`,
+      Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+    };
+  },
+
+  async pobierz(k) {
+    const odp = await fetch(`${this.adres(k)}?ref=${k.galaz || "main"}`, { headers: this.naglowki(k) });
+    if (odp.status === 404) return { istnieje: false };
+    if (!odp.ok) throw new Error(this.opisBledu(odp.status));
+    const dane = await odp.json();
+    return { istnieje: true, sha: dane.sha, tresc: JSON.parse(b64.dekoduj(dane.content)) };
+  },
+
+  async wyslij(k, obiekt, sha) {
+    const odp = await fetch(this.adres(k), {
+      method: "PUT",
+      headers: { ...this.naglowki(k), "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: `Dziennik — zapis ${new Date().toISOString().slice(0, 16).replace("T", " ")}`,
+        content: b64.koduj(JSON.stringify(obiekt, null, 2)),
+        branch: k.galaz || "main",
+        ...(sha ? { sha } : {}),
+      }),
+    });
+    if (!odp.ok) throw new Error(this.opisBledu(odp.status));
+    return true;
+  },
+
+  opisBledu(status) {
+    if (status === 401) return "Token odrzucony — wygasł albo jest błędny.";
+    if (status === 403) return "Brak uprawnień do zapisu w tym repozytorium.";
+    if (status === 404) return "Nie znaleziono repozytorium. Sprawdź właściciela i nazwę.";
+    if (status === 409) return "Konflikt wersji — pobierz dane z GitHuba i spróbuj ponownie.";
+    if (status === 422) return "Odrzucone przez GitHuba — sprawdź nazwę gałęzi.";
+    return `Błąd połączenia (${status}).`;
+  },
+};
 
 /* ---------------------------------------------------------------
    POMOCNICZE
@@ -312,6 +379,8 @@ function DziennikTreningowy() {
   const [ladowanie, setLadowanie] = useState(true);
   const [awaria, setAwaria] = useState(null);
   const [rodzajZapisu, setRodzajZapisu] = useState(null);
+  const [konfigGH, setKonfigGH] = useState(null);
+  const [stanGH, setStanGH] = useState({ etap: "bezczynny", tekst: "" });
   const [widok, setWidok] = useState("start");
   const [aktywna, setAktywna] = useState(null);
 
@@ -331,6 +400,12 @@ function DziennikTreningowy() {
       } catch (e) {
         // brak wskazówek to też normalna sytuacja
       }
+      try {
+        const g = await magazyn.czytaj(KLUCZ_GH);
+        if (g) setKonfigGH(JSON.parse(g));
+      } catch (e) {
+        // brak konfiguracji synchronizacji
+      }
       setLadowanie(false);
     })();
   }, []);
@@ -339,6 +414,7 @@ function DziennikTreningowy() {
     setSesje(noweSesje);
     const ok = await magazyn.pisz(KLUCZ, JSON.stringify(noweSesje));
     setAwaria(ok ? null : { szczegol: magazyn.szczegol });
+    wyslijDoGH(noweSesje, wskazowki);
     return ok;
   };
 
@@ -346,6 +422,57 @@ function DziennikTreningowy() {
     const nowe = { ...wskazowki, [plan]: tekst };
     setWskazowki(nowe);
     await magazyn.pisz(KLUCZ_WSK, JSON.stringify(nowe));
+    wyslijDoGH(sesje, nowe);
+  };
+
+  const zapiszKonfigGH = async (k) => {
+    setKonfigGH(k);
+    await magazyn.pisz(KLUCZ_GH, JSON.stringify(k));
+  };
+
+  const gotowyGH = (k) => k && k.token && k.wlasciciel && k.repo && k.sciezka;
+
+  const wyslijDoGH = async (noweSesje, noweWskazowki) => {
+    const k = konfigGH;
+    if (!gotowyGH(k)) return;
+    setStanGH({ etap: "praca", tekst: "wysyłam…" });
+    try {
+      const obecne = await github.pobierz(k);
+      await github.wyslij(
+        k,
+        { wersja: WERSJA, zapisano: new Date().toISOString(), sesje: noweSesje, wskazowki: noweWskazowki },
+        obecne.istnieje ? obecne.sha : null
+      );
+      setStanGH({ etap: "ok", tekst: `wysłano ${new Date().toTimeString().slice(0, 5)}` });
+    } catch (e) {
+      setStanGH({ etap: "blad", tekst: e.message });
+    }
+  };
+
+  const pobierzZGH = async () => {
+    const k = konfigGH;
+    if (!gotowyGH(k)) return;
+    setStanGH({ etap: "praca", tekst: "pobieram…" });
+    try {
+      const wynik = await github.pobierz(k);
+      if (!wynik.istnieje) {
+        setStanGH({ etap: "blad", tekst: "Pliku jeszcze nie ma w repozytorium — najpierw wyślij." });
+        return;
+      }
+      const dane = wynik.tresc || {};
+      if (Array.isArray(dane.sesje)) {
+        setSesje(dane.sesje);
+        await magazyn.pisz(KLUCZ, JSON.stringify(dane.sesje));
+      }
+      if (dane.wskazowki) {
+        const w = { A: "", B: "", ...dane.wskazowki };
+        setWskazowki(w);
+        await magazyn.pisz(KLUCZ_WSK, JSON.stringify(w));
+      }
+      setStanGH({ etap: "ok", tekst: `pobrano ${(dane.sesje || []).length} sesji` });
+    } catch (e) {
+      setStanGH({ etap: "blad", tekst: e.message });
+    }
   };
 
   const ostatniaZPlanu = (plan) =>
@@ -412,7 +539,7 @@ function DziennikTreningowy() {
         {<PasekAwarii rodzaj={rodzajZapisu} awaria={awaria} />}
 
         {widok === "start" && (
-          <Start sesje={sesje} wskazowki={wskazowki} ostatniaZPlanu={ostatniaZPlanu} rozpocznij={rozpocznij} setWidok={setWidok} />
+          <Start sesje={sesje} wskazowki={wskazowki} stanGH={stanGH} konfigGH={konfigGH} ostatniaZPlanu={ostatniaZPlanu} rozpocznij={rozpocznij} setWidok={setWidok} />
         )}
 
         {widok === "sesja" && aktywna && (
@@ -430,6 +557,18 @@ function DziennikTreningowy() {
         {widok === "historia" && <Historia sesje={sesje} usunSesje={usunSesje} setWidok={setWidok} />}
 
         {widok === "import" && <Import dodajSesje={dodajSesje} setWidok={setWidok} />}
+
+        {widok === "chmura" && (
+          <Chmura
+            konfig={konfigGH}
+            zapiszKonfig={zapiszKonfigGH}
+            wyslij={() => wyslijDoGH(sesje, wskazowki)}
+            pobierz={pobierzZGH}
+            stan={stanGH}
+            sesje={sesje}
+            wskazowki={wskazowki}
+          />
+        )}
       </div>
     </div>
   );
@@ -482,8 +621,8 @@ function Naglowek({ widok, setWidok, liczba }) {
         <span style={{ ...mono, fontSize: 11, color: C.steel, letterSpacing: "0.1em" }}>{liczba} {slowo}</span>
       </div>
       {widok !== "sesja" && (
-        <div style={{ display: "flex", gap: 18, marginTop: 10 }}>
-          {[["start", "Trening"], ["historia", "Historia"], ["import", "Wklej"]].map(([k, etykieta]) => (
+        <div style={{ display: "flex", gap: 14, marginTop: 10 }}>
+          {[["start", "Trening"], ["historia", "Historia"], ["import", "Wklej"], ["chmura", "Kopia"]].map(([k, etykieta]) => (
             <button
               key={k}
               onClick={() => setWidok(k)}
@@ -508,7 +647,7 @@ function Naglowek({ widok, setWidok, liczba }) {
 /* ---------------------------------------------------------------
    EKRAN STARTOWY
    --------------------------------------------------------------- */
-function Start({ sesje, wskazowki, ostatniaZPlanu, rozpocznij, setWidok }) {
+function Start({ sesje, wskazowki, stanGH, konfigGH, ostatniaZPlanu, rozpocznij, setWidok }) {
   return (
     <div style={{ padding: "0 16px" }}>
       {["A", "B"].map((plan) => {
@@ -566,6 +705,11 @@ function Start({ sesje, wskazowki, ostatniaZPlanu, rozpocznij, setWidok }) {
       )}
       <div style={{ ...mono, fontSize: 10, color: C.steel, letterSpacing: "0.1em", textAlign: "center", marginTop: 34, paddingTop: 14, borderTop: `1px solid ${C.line}` }}>
         DZIENNIK v{WERSJA} · {formatData(DATA_WERSJI).toUpperCase()}
+        {konfigGH && konfigGH.token && (
+          <div style={{ marginTop: 5, color: (stanGH || {}).etap === "blad" ? C.hot : (stanGH || {}).etap === "ok" ? C.ok : C.steel }}>
+            GITHUB: {((stanGH || {}).tekst || "gotowy").toUpperCase()}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1180,6 +1324,140 @@ function Import({ dodajSesje, setWidok }) {
       >
         PRZEJDŹ DO HISTORII →
       </button>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------
+   KOPIA W CHMURZE (GITHUB)
+   --------------------------------------------------------------- */
+function Chmura({ konfig, zapiszKonfig, wyslij, pobierz, stan, sesje, wskazowki }) {
+  const [k, setK] = useState(konfig || { wlasciciel: "", repo: "", sciezka: "dane.json", galaz: "main", token: "" });
+  const [pokazToken, setPokazToken] = useState(false);
+  const [potwierdzenie, setPotwierdzenie] = useState(false);
+
+  const zmien = (pole, wartosc) => {
+    const nowy = { ...k, [pole]: wartosc.trim() };
+    setK(nowy);
+    zapiszKonfig(nowy);
+  };
+
+  const gotowy = k.token && k.wlasciciel && k.repo && k.sciezka;
+
+  const pobierzPlik = () => {
+    const tresc = JSON.stringify({ wersja: WERSJA, zapisano: new Date().toISOString(), sesje, wskazowki }, null, 2);
+    const url = URL.createObjectURL(new Blob([tresc], { type: "application/json" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `dziennik-${dzis()}.json`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  const pole = (etykieta, klucz, placeholder, typ = "text") => (
+    <div style={{ marginBottom: 10 }}>
+      <label style={{ ...mono, fontSize: 10.5, letterSpacing: "0.1em", color: C.steel, display: "block", marginBottom: 4 }}>
+        {etykieta}
+      </label>
+      <input
+        type={typ}
+        value={k[klucz] || ""}
+        onChange={(e) => zmien(klucz, e.target.value)}
+        placeholder={placeholder}
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="none"
+        spellCheck={false}
+        className="dt-focus"
+        style={{ ...mono, width: "100%", background: "#FFFFFF", border: `1px solid ${C.line}`, padding: "11px", fontSize: 14, color: C.ink }}
+      />
+    </div>
+  );
+
+  const kolorStanu = stan.etap === "ok" ? C.ok : stan.etap === "blad" ? C.hot : C.steel;
+
+  return (
+    <div style={{ padding: "0 16px" }}>
+      <p style={{ fontSize: 13.5, color: C.inkSoft, lineHeight: 1.55, marginTop: 0 }}>
+        Treningi zapisują się na GitHubie po każdej sesji. Pamięć przeglądarki zostaje kopią podręczną — gdy zniknie, pobierzesz wszystko z powrotem.
+      </p>
+
+      <button
+        onClick={pobierzPlik}
+        className="dt-focus"
+        style={{ ...mono, width: "100%", background: "transparent", color: C.ink, border: `1px solid ${C.ink}`, padding: "12px 0", fontSize: 12, letterSpacing: "0.06em", cursor: "pointer", fontWeight: 600, marginBottom: 22 }}
+      >
+        ⤓ POBIERZ KOPIĘ NA TELEFON ({sesje.length})
+      </button>
+
+      <div style={{ ...mono, fontSize: 10.5, letterSpacing: "0.12em", color: C.steel, marginBottom: 10, paddingBottom: 6, borderBottom: `1px solid ${C.line}` }}>
+        SYNCHRONIZACJA Z GITHUBEM
+      </div>
+
+      {pole("WŁAŚCICIEL (TWÓJ LOGIN)", "wlasciciel", "np. norbert")}
+      {pole("REPOZYTORIUM (PRYWATNE)", "repo", "np. dziennik-dane")}
+      {pole("PLIK", "sciezka", "dane.json")}
+      {pole("GAŁĄŹ", "galaz", "main")}
+
+      <div style={{ marginBottom: 10 }}>
+        <label style={{ ...mono, fontSize: 10.5, letterSpacing: "0.1em", color: C.steel, display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+          <span>TOKEN DOSTĘPU</span>
+          <button
+            onClick={() => setPokazToken(!pokazToken)}
+            className="dt-focus"
+            style={{ ...mono, background: "none", border: "none", color: C.signal, fontSize: 10.5, cursor: "pointer", padding: 0 }}
+          >
+            {pokazToken ? "UKRYJ" : "POKAŻ"}
+          </button>
+        </label>
+        <input
+          type={pokazToken ? "text" : "password"}
+          value={k.token || ""}
+          onChange={(e) => zmien("token", e.target.value)}
+          placeholder="github_pat_…"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="none"
+          spellCheck={false}
+          className="dt-focus"
+          style={{ ...mono, width: "100%", background: "#FFFFFF", border: `1px solid ${C.line}`, padding: "11px", fontSize: 14, color: C.ink }}
+        />
+      </div>
+
+      <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+        <button
+          onClick={wyslij}
+          disabled={!gotowy}
+          className="dt-focus"
+          style={{ ...mono, flex: 1, background: gotowy ? C.ink : C.line, color: gotowy ? C.paper : C.steel, border: "none", padding: "14px 0", fontSize: 12, letterSpacing: "0.06em", cursor: gotowy ? "pointer" : "default", fontWeight: 600 }}
+        >
+          ↑ WYŚLIJ
+        </button>
+        <button
+          onClick={() => (potwierdzenie ? (pobierz(), setPotwierdzenie(false)) : setPotwierdzenie(true))}
+          disabled={!gotowy}
+          className="dt-focus"
+          style={{ ...mono, flex: 1, background: potwierdzenie ? C.hot : "transparent", color: potwierdzenie ? "#FFFFFF" : gotowy ? C.ink : C.steel, border: `1px solid ${potwierdzenie ? C.hot : C.line}`, padding: "14px 0", fontSize: 12, letterSpacing: "0.06em", cursor: gotowy ? "pointer" : "default", fontWeight: 600 }}
+        >
+          {potwierdzenie ? "NADPISAĆ?" : "↓ POBIERZ"}
+        </button>
+      </div>
+
+      {potwierdzenie && (
+        <div style={{ ...mono, fontSize: 11, color: C.hot, marginTop: 8, lineHeight: 1.5 }}>
+          Pobranie zastąpi dane w telefonie tym, co leży na GitHubie. Stuknij ponownie, aby potwierdzić.
+        </div>
+      )}
+
+      {stan.tekst && (
+        <div style={{ ...mono, fontSize: 12, marginTop: 14, color: kolorStanu, lineHeight: 1.6 }}>
+          {stan.tekst}
+        </div>
+      )}
+
+      <div style={{ fontSize: 12.5, color: C.steel, marginTop: 24, lineHeight: 1.6, paddingTop: 14, borderTop: `1px solid ${C.line}` }}>
+        Token trzymany jest w pamięci tej przeglądarki. Użyj tokena drobnoziarnistego z dostępem wyłącznie do repozytorium z danymi i uprawnieniem „Contents: Read and write". W razie czego unieważnisz go w ustawieniach GitHuba.
+      </div>
     </div>
   );
 }
