@@ -1041,6 +1041,8 @@ function Import({ dodajSesje, setWidok }) {
     const wpisy = {};
     let znalezione = 0;
     let notatka = "";
+    const pominiete = [];
+    const niejednoznaczne = [];
 
     tekst.split("\n").forEach((linia) => {
       const czysta = linia.trim();
@@ -1054,10 +1056,21 @@ function Import({ dodajSesje, setWidok }) {
       const nazwa = czysta.slice(0, podzial).trim().toLowerCase();
       const reszta = czysta.slice(podzial + 1);
 
-      const cw = cwiczenia.find(
-        (c) => c.nazwa.toLowerCase() === nazwa || c.nazwa.toLowerCase().startsWith(nazwa.slice(0, 12))
-      );
-      if (!cw) return;
+      const kandydaci = cwiczenia.filter((c) => {
+        const pelna = c.nazwa.toLowerCase();
+        if (pelna === nazwa) return true;
+        if (nazwa.length < 8) return false;
+        return pelna.startsWith(nazwa) || nazwa.startsWith(pelna);
+      });
+
+      // dokładne trafienie ma pierwszeństwo; niejednoznaczne pomijamy
+      const dokladne = kandydaci.find((c) => c.nazwa.toLowerCase() === nazwa);
+      const cw = dokladne || (kandydaci.length === 1 ? kandydaci[0] : null);
+      if (!cw) {
+        if (kandydaci.length > 1) niejednoznaczne.push(czysta.slice(0, podzial).trim());
+        else pominiete.push(czysta.slice(0, podzial).trim());
+        return;
+      }
 
       const serie = [];
       const wzor = /(\d+(?:[.,]\d+)?)\s*(?:kg|s|m)?\s*[×x*]\s*(\d+(?:[.,]\d+)?)/gi;
@@ -1076,11 +1089,11 @@ function Import({ dodajSesje, setWidok }) {
       }
     });
 
-    return { wpisy, znalezione, notatka };
+    return { wpisy, znalezione, notatka, pominiete, niejednoznaczne };
   };
 
   const zapisz = async () => {
-    const { wpisy, znalezione, notatka } = parsuj();
+    const { wpisy, znalezione, notatka, pominiete, niejednoznaczne } = parsuj();
     if (!znalezione) {
       setStatus({ typ: "blad", tekst: "Nie rozpoznałem żadnego ćwiczenia. Sprawdź, czy nazwy zgadzają się z planem i czy po nazwie jest dwukropek." });
       return;
@@ -1093,12 +1106,15 @@ function Import({ dodajSesje, setWidok }) {
       rozgrzewka: [],
       notatka,
     });
-    setStatus(
-      ok
-        ? { typ: "ok", tekst: `Zapisano ${znalezione} ćwiczeń.` }
-        : { typ: "blad", tekst: "Zapis się nie powiódł — pamięć jest niedostępna w tym oknie." }
-    );
-    if (ok) setTekst("");
+    if (!ok) {
+      setStatus({ typ: "blad", tekst: "Zapis się nie powiódł — pamięć jest niedostępna w tym oknie." });
+      return;
+    }
+    let tekst = `Zapisano ${znalezione} ćwiczeń.`;
+    if (niejednoznaczne.length) tekst += ` Nazwa niejednoznaczna, pominięto: ${niejednoznaczne.join(", ")}.`;
+    if (pominiete.length) tekst += ` Nie ma w planie ${plan}: ${pominiete.join(", ")}.`;
+    setStatus({ typ: niejednoznaczne.length || pominiete.length ? "uwaga" : "ok", tekst });
+    setTekst("");
   };
 
   return (
@@ -1146,7 +1162,7 @@ function Import({ dodajSesje, setWidok }) {
       </button>
 
       {status && (
-        <div style={{ ...mono, fontSize: 12, marginTop: 12, color: status.typ === "ok" ? C.ok : C.hot, lineHeight: 1.6 }}>
+        <div style={{ ...mono, fontSize: 12, marginTop: 12, color: status.typ === "ok" ? C.ok : status.typ === "uwaga" ? C.hot : C.hot, lineHeight: 1.6 }}>
           {status.tekst}
         </div>
       )}
