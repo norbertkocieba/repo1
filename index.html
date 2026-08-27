@@ -96,6 +96,7 @@ const PLANY = {
 };
 
 const KLUCZ = "dziennik:sesje";
+const KLUCZ_WSK = "dziennik:wskazowki";
 
 /* ---------------------------------------------------------------
    POMOCNICZE
@@ -261,24 +262,24 @@ const magazyn = {
     this.rodzaj = "pamiec";
   },
 
-  async czytaj() {
+  async czytaj(klucz) {
     if (this.rodzaj === "artefakt") {
       try {
-        const w = await window.storage.get(KLUCZ);
+        const w = await window.storage.get(klucz);
         return w && w.value ? w.value : null;
       } catch (e) { return null; }
     }
     if (this.rodzaj === "przegladarka") {
-      try { return window.localStorage.getItem(KLUCZ); } catch (e) { return null; }
+      try { return window.localStorage.getItem(klucz); } catch (e) { return null; }
     }
-    return this._ulotne || null;
+    return (this._ulotne || {})[klucz] || null;
   },
 
-  async pisz(tekst) {
+  async pisz(klucz, tekst) {
     if (this.rodzaj === "artefakt") {
       for (let i = 0; i < 2; i++) {
         try {
-          const w = await window.storage.set(KLUCZ, tekst);
+          const w = await window.storage.set(klucz, tekst);
           if (w) return true;
         } catch (e) { this.szczegol = String(e && e.message ? e.message : e); }
         await new Promise((r) => setTimeout(r, 400));
@@ -286,9 +287,9 @@ const magazyn = {
       return false;
     }
     if (this.rodzaj === "przegladarka") {
-      try { window.localStorage.setItem(KLUCZ, tekst); return true; } catch (e) { return false; }
+      try { window.localStorage.setItem(klucz, tekst); return true; } catch (e) { return false; }
     }
-    this._ulotne = tekst;
+    this._ulotne = { ...(this._ulotne || {}), [klucz]: tekst };
     return true;
   },
 };
@@ -304,6 +305,7 @@ const OPIS_MAGAZYNU = {
    --------------------------------------------------------------- */
 function DziennikTreningowy() {
   const [sesje, setSesje] = useState([]);
+  const [wskazowki, setWskazowki] = useState({ A: "", B: "" });
   const [ladowanie, setLadowanie] = useState(true);
   const [awaria, setAwaria] = useState(null);
   const [rodzajZapisu, setRodzajZapisu] = useState(null);
@@ -315,21 +317,32 @@ function DziennikTreningowy() {
       await magazyn.wykryj();
       setRodzajZapisu(magazyn.rodzaj);
       try {
-        const surowe = await magazyn.czytaj();
+        const surowe = await magazyn.czytaj(KLUCZ);
         if (surowe) setSesje(JSON.parse(surowe));
       } catch (e) {
         // pierwsze uruchomienie — brak danych to normalna sytuacja
-      } finally {
-        setLadowanie(false);
       }
+      try {
+        const w = await magazyn.czytaj(KLUCZ_WSK);
+        if (w) setWskazowki({ A: "", B: "", ...JSON.parse(w) });
+      } catch (e) {
+        // brak wskazówek to też normalna sytuacja
+      }
+      setLadowanie(false);
     })();
   }, []);
 
   const zapisz = async (noweSesje) => {
     setSesje(noweSesje);
-    const ok = await magazyn.pisz(JSON.stringify(noweSesje));
+    const ok = await magazyn.pisz(KLUCZ, JSON.stringify(noweSesje));
     setAwaria(ok ? null : { szczegol: magazyn.szczegol });
     return ok;
+  };
+
+  const zapiszWskazowki = async (plan, tekst) => {
+    const nowe = { ...wskazowki, [plan]: tekst };
+    setWskazowki(nowe);
+    await magazyn.pisz(KLUCZ_WSK, JSON.stringify(nowe));
   };
 
   const ostatniaZPlanu = (plan) =>
@@ -396,13 +409,15 @@ function DziennikTreningowy() {
         {<PasekAwarii rodzaj={rodzajZapisu} awaria={awaria} />}
 
         {widok === "start" && (
-          <Start sesje={sesje} ostatniaZPlanu={ostatniaZPlanu} rozpocznij={rozpocznij} setWidok={setWidok} />
+          <Start sesje={sesje} wskazowki={wskazowki} ostatniaZPlanu={ostatniaZPlanu} rozpocznij={rozpocznij} setWidok={setWidok} />
         )}
 
         {widok === "sesja" && aktywna && (
           <Sesja
             sesja={aktywna}
             setSesja={setAktywna}
+            wskazowka={wskazowki[aktywna.plan] || ""}
+            zapiszWskazowki={zapiszWskazowki}
             ostatnieDlaCwiczenia={ostatnieDlaCwiczenia}
             zapiszSesje={zapiszSesje}
             anuluj={() => { setAktywna(null); setWidok("start"); }}
@@ -490,12 +505,13 @@ function Naglowek({ widok, setWidok, liczba }) {
 /* ---------------------------------------------------------------
    EKRAN STARTOWY
    --------------------------------------------------------------- */
-function Start({ sesje, ostatniaZPlanu, rozpocznij, setWidok }) {
+function Start({ sesje, wskazowki, ostatniaZPlanu, rozpocznij, setWidok }) {
   return (
     <div style={{ padding: "0 16px" }}>
       {["A", "B"].map((plan) => {
         const ost = ostatniaZPlanu(plan);
         const p = PLANY[plan];
+        const wsk = (wskazowki || {})[plan];
         return (
           <button
             key={plan}
@@ -515,6 +531,11 @@ function Start({ sesje, ostatniaZPlanu, rozpocznij, setWidok }) {
             </div>
             <div style={{ fontSize: 13, color: C.inkSoft, marginTop: 6 }}>{p.akcent}</div>
             <div style={{ ...mono, fontSize: 11, color: C.steel, marginTop: 8 }}>{p.cwiczenia.length} ĆWICZEŃ</div>
+            {wsk && (
+              <div style={{ ...mono, fontSize: 11, color: C.signal, marginTop: 8, paddingTop: 8, borderTop: `1px dashed ${C.line}`, fontWeight: 600 }}>
+                ★ SĄ WSKAZÓWKI NA TEN TRENING
+              </div>
+            )}
           </button>
         );
       })}
@@ -609,7 +630,7 @@ function Stoper({ przerwa, przerwaPo }) {
 /* ---------------------------------------------------------------
    SESJA TRENINGOWA
    --------------------------------------------------------------- */
-function Sesja({ sesja, setSesja, ostatnieDlaCwiczenia, zapiszSesje, anuluj }) {
+function Sesja({ sesja, setSesja, wskazowka, zapiszWskazowki, ostatnieDlaCwiczenia, zapiszSesje, anuluj }) {
   const plan = PLANY[sesja.plan];
   const [pokazPodsumowanie, setPokazPodsumowanie] = useState(false);
 
@@ -663,6 +684,8 @@ function Sesja({ sesja, setSesja, ostatnieDlaCwiczenia, zapiszSesje, anuluj }) {
       </div>
       <div style={{ ...mono, fontSize: 11, color: C.steel, marginBottom: 18 }}>{formatData(sesja.data).toUpperCase()}</div>
 
+      <Wskazowki plan={sesja.plan} tekst={wskazowka} zapisz={zapiszWskazowki} />
+
       <Rozgrzewka zaznaczone={sesja.rozgrzewka || []} przelacz={przelaczRozgrzewke} />
 
       {plan.cwiczenia.map((cw, i) => (
@@ -713,6 +736,73 @@ function Sesja({ sesja, setSesja, ostatnieDlaCwiczenia, zapiszSesje, anuluj }) {
           rows={10}
           style={{ ...mono, width: "100%", background: C.card, border: `1px solid ${C.line}`, padding: 11, fontSize: 12, color: C.inkSoft, lineHeight: 1.6 }}
         />
+      )}
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------
+   WSKAZÓWKI NA NASTĘPNY TRENING
+   --------------------------------------------------------------- */
+function Wskazowki({ plan, tekst, zapisz }) {
+  const [edycja, setEdycja] = useState(false);
+  const [roboczy, setRoboczy] = useState(tekst);
+
+  useEffect(() => { setRoboczy(tekst); }, [tekst]);
+
+  const zatwierdz = () => {
+    zapisz(plan, roboczy);
+    setEdycja(false);
+  };
+
+  if (!edycja && !tekst) {
+    return (
+      <button
+        onClick={() => setEdycja(true)}
+        className="dt-focus"
+        style={{ ...mono, background: "none", border: `1px dashed ${C.line}`, color: C.steel, fontSize: 11.5, padding: "11px 0", width: "100%", cursor: "pointer", marginBottom: 20, letterSpacing: "0.04em" }}
+      >
+        + WSKAZÓWKI NA TEN TRENING
+      </button>
+    );
+  }
+
+  return (
+    <div style={{ marginBottom: 20, background: "#FFFFFF", border: `1px solid ${C.signal}`, borderLeft: `4px solid ${C.signal}`, padding: "12px 13px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+        <span style={{ ...mono, fontSize: 10.5, letterSpacing: "0.12em", color: C.signal, fontWeight: 700 }}>
+          NA TEN TRENING
+        </span>
+        <button
+          onClick={() => (edycja ? zatwierdz() : setEdycja(true))}
+          className="dt-focus"
+          style={{ ...mono, background: "none", border: "none", color: edycja ? C.ok : C.steel, fontSize: 11, cursor: "pointer", padding: 4, fontWeight: 600 }}
+        >
+          {edycja ? "✓ ZAPISZ" : "EDYTUJ"}
+        </button>
+      </div>
+
+      {edycja ? (
+        <>
+          <textarea
+            value={roboczy}
+            onChange={(e) => setRoboczy(e.target.value)}
+            onBlur={zatwierdz}
+            rows={7}
+            placeholder="Wklej tu uwagi na następny raz — np. jakie ciężary podnieść."
+            className="dt-focus"
+            style={{ ...body, width: "100%", background: "#FFFFFF", border: `1px solid ${C.line}`, padding: 10, fontSize: 14, color: C.ink, resize: "vertical", lineHeight: 1.5 }}
+          />
+          <button
+            onClick={() => { zapisz(plan, ""); setRoboczy(""); setEdycja(false); }}
+            className="dt-focus"
+            style={{ ...mono, background: "none", border: "none", color: C.steel, fontSize: 11, padding: "8px 0 0", cursor: "pointer" }}
+          >
+            WYCZYŚĆ
+          </button>
+        </>
+      ) : (
+        <div style={{ fontSize: 14, color: C.ink, lineHeight: 1.55, whiteSpace: "pre-wrap" }}>{tekst}</div>
       )}
     </div>
   );
@@ -799,9 +889,49 @@ function Cwiczenie({ numer, cw, wpis, ustawSerie, przelaczStrony, ostatnie }) {
         <button
           onClick={() => przelaczStrony(cw.id)}
           className="dt-focus"
-          style={{ ...mono, background: "none", border: "none", color: wpis.strony ? C.signal : C.steel, fontSize: 11, padding: "9px 0 2px", cursor: "pointer", letterSpacing: "0.04em" }}
+          style={{
+            ...mono,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            marginTop: 10,
+            padding: "9px 11px",
+            width: "100%",
+            cursor: "pointer",
+            background: wpis.strony ? C.signal : "#FFFFFF",
+            color: wpis.strony ? "#FFFFFF" : C.inkSoft,
+            border: `1px solid ${wpis.strony ? C.signal : C.line}`,
+            fontSize: 11.5,
+            letterSpacing: "0.04em",
+            fontWeight: 600,
+            textAlign: "left",
+          }}
         >
-          {wpis.strony ? "◉ LEWA I PRAWA OSOBNO" : "○ ZAPISZ STRONY OSOBNO"}
+          <span
+            style={{
+              width: 30,
+              height: 17,
+              flexShrink: 0,
+              borderRadius: 9,
+              background: wpis.strony ? "#FFFFFF" : C.line,
+              position: "relative",
+              display: "inline-block",
+            }}
+          >
+            <span
+              style={{
+                position: "absolute",
+                top: 2,
+                left: wpis.strony ? 15 : 2,
+                width: 13,
+                height: 13,
+                borderRadius: "50%",
+                background: wpis.strony ? C.signal : "#FFFFFF",
+                transition: "left 0.15s",
+              }}
+            />
+          </span>
+          {wpis.strony ? "LEWA I PRAWA OSOBNO — WŁĄCZONE" : "ZAPISZ LEWĄ I PRAWĄ OSOBNO"}
         </button>
       )}
 
