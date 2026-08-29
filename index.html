@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Dziennik">
-<meta name="theme-color" content="#DEDCD2">
+<meta name="theme-color" content="#242829">
 <title>Dziennik treningowy</title>
-<style>html,body{margin:0;background:#DEDCD2;}</style>
+<style>html,body{margin:0;background:#242829;}</style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js" crossorigin></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js" crossorigin></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.4/babel.min.js" crossorigin></script>
@@ -22,25 +22,60 @@ const { useState, useEffect, useRef } = React;
 /* ---------------------------------------------------------------
    PALETA / TYPOGRAFIA
    --------------------------------------------------------------- */
-const C = {
-  ink: "#16211E",
-  inkSoft: "#3B4A44",
-  paper: "#DEDCD2",
-  card: "#F1EFE8",
-  line: "#C4C2B6",
-  steel: "#6E7D75",
-  signal: "#1F44C8",
-  hot: "#C6371F",
-  ok: "#2E7D53",
+/* ---------------------------------------------------------------
+   MOTYWY
+   papier   — pierwotny, jasny, papierowy
+   multicam — nocny, wzorowany na palecie Multicam Black
+   --------------------------------------------------------------- */
+const MOTYWY = {
+  papier: {
+    nazwa: "Papier",
+    ink: "#16211E",
+    inkSoft: "#3B4A44",
+    paper: "#DEDCD2",
+    card: "#F1EFE8",
+    pole: "#FFFFFF",
+    line: "#C4C2B6",
+    steel: "#6E7D75",
+    signal: "#1F44C8",
+    hot: "#C6371F",
+    ok: "#2E7D53",
+    naSygnale: "#FFFFFF",
+    kamuflaz: false,
+  },
+  multicam: {
+    nazwa: "Multicam Black",
+    ink: "#E9EAE7",
+    inkSoft: "#B4B8B3",
+    paper: "#242829",
+    card: "rgba(30,34,36,0.88)",
+    pole: "#2F3437",
+    line: "#3F4649",
+    steel: "#7F8785",
+    signal: "#B98E5E",
+    hot: "#C2543C",
+    ok: "#6F9663",
+    naSygnale: "#14171A",
+    kamuflaz: true,
+  },
 };
 
-const FONTS = `
+let C = { ...MOTYWY.multicam };
+
+const fonty = () => `
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
 * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
-body { margin: 0; }
+body { margin: 0; background: ${C.paper}; }
+input, textarea { color-scheme: ${C.kamuflaz ? "dark" : "light"}; }
 .dt-focus:focus-visible { outline: 2px solid ${C.signal}; outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 `;
+
+/* Wzór wygenerowany proceduralnie: duże kształty czarne i ciemnozielone,
+   małe brązowe, na ciemnoszarym tle. Kafel 600 px, łączy się bezszwowo. */
+const KAMUFLAZ_SVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"600\" height=\"600\" viewBox=\"0 0 600 600\"><rect width=\"600\" height=\"600\" fill=\"#242829\"/><defs><radialGradient id=\"j0\" gradientUnits=\"userSpaceOnUse\" cx=\"131\" cy=\"153\" r=\"206\"><stop offset=\"0\" stop-color=\"#30363A\" stop-opacity=\"0.55\"/><stop offset=\"0.55\" stop-color=\"#30363A\" stop-opacity=\"0.33\"/><stop offset=\"1\" stop-color=\"#30363A\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"j1\" gradientUnits=\"userSpaceOnUse\" cx=\"131\" cy=\"753\" r=\"206\"><stop offset=\"0\" stop-color=\"#30363A\" stop-opacity=\"0.55\"/><stop offset=\"0.55\" stop-color=\"#30363A\" stop-opacity=\"0.33\"/><stop offset=\"1\" stop-color=\"#30363A\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"j2\" gradientUnits=\"userSpaceOnUse\" cx=\"731\" cy=\"153\" r=\"206\"><stop offset=\"0\" stop-color=\"#30363A\" stop-opacity=\"0.55\"/><stop offset=\"0.55\" stop-color=\"#30363A\" stop-opacity=\"0.33\"/><stop offset=\"1\" stop-color=\"#30363A\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"j3\" gradientUnits=\"userSpaceOnUse\" cx=\"731\" cy=\"753\" r=\"206\"><stop offset=\"0\" stop-color=\"#30363A\" stop-opacity=\"0.55\"/><stop offset=\"0.55\" stop-color=\"#30363A\" stop-opacity=\"0.33\"/><stop offset=\"1\" stop-color=\"#30363A\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"j4\" gradientUnits=\"userSpaceOnUse\" cx=\"13\" cy=\"-42\" r=\"248\"><stop offset=\"0\" stop-color=\"#30363A\" stop-opacity=\"0.55\"/><stop offset=\"0.55\" stop-color=\"#30363A\" stop-opacity=\"0.33\"/><stop offset=\"1\" stop-color=\"#30363A\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"j5\" gradientUnits=\"userSpaceOnUse\" cx=\"13\" cy=\"558\" r=\"248\"><stop offset=\"0\" stop-color=\"#30363A\" stop-opacity=\"0.55\"/><stop offset=\"0.55\" stop-color=\"#30363A\" stop-opacity=\"0.33\"/><stop offset=\"1\" stop-color=\"#30363A\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"j6\" gradientUnits=\"userSpaceOnUse\" cx=\"613\" cy=\"-42\" r=\"248\"><stop offset=\"0\" stop-color=\"#30363A\" stop-opacity=\"0.55\"/><stop offset=\"0.55\" stop-color=\"#30363A\" stop-opacity=\"0.33\"/><stop offset=\"1\" stop-color=\"#30363A\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"j7\" gradientUnits=\"userSpaceOnUse\" cx=\"613\" cy=\"558\" r=\"248\"><stop offset=\"0\" stop-color=\"#30363A\" stop-opacity=\"0.55\"/><stop offset=\"0.55\" stop-color=\"#30363A\" stop-opacity=\"0.33\"/><stop offset=\"1\" stop-color=\"#30363A\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"j8\" gradientUnits=\"userSpaceOnUse\" cx=\"-235\" cy=\"164\" r=\"296\"><stop offset=\"0\" stop-color=\"#30363A\" stop-opacity=\"0.55\"/><stop offset=\"0.55\" stop-color=\"#30363A\" stop-opacity=\"0.33\"/><stop offset=\"1\" stop-color=\"#30363A\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"j9\" gradientUnits=\"userSpaceOnUse\" cx=\"-235\" cy=\"764\" r=\"296\"><stop offset=\"0\" stop-color=\"#30363A\" stop-opacity=\"0.55\"/><stop offset=\"0.55\" stop-color=\"#30363A\" stop-opacity=\"0.33\"/><stop offset=\"1\" stop-color=\"#30363A\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"j10\" gradientUnits=\"userSpaceOnUse\" cx=\"365\" cy=\"164\" r=\"296\"><stop offset=\"0\" stop-color=\"#30363A\" stop-opacity=\"0.55\"/><stop offset=\"0.55\" stop-color=\"#30363A\" stop-opacity=\"0.33\"/><stop offset=\"1\" stop-color=\"#30363A\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"j11\" gradientUnits=\"userSpaceOnUse\" cx=\"365\" cy=\"764\" r=\"296\"><stop offset=\"0\" stop-color=\"#30363A\" stop-opacity=\"0.55\"/><stop offset=\"0.55\" stop-color=\"#30363A\" stop-opacity=\"0.33\"/><stop offset=\"1\" stop-color=\"#30363A\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"j12\" gradientUnits=\"userSpaceOnUse\" cx=\"-198\" cy=\"9\" r=\"242\"><stop offset=\"0\" stop-color=\"#30363A\" stop-opacity=\"0.55\"/><stop offset=\"0.55\" stop-color=\"#30363A\" stop-opacity=\"0.33\"/><stop offset=\"1\" stop-color=\"#30363A\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"j13\" gradientUnits=\"userSpaceOnUse\" cx=\"-198\" cy=\"609\" r=\"242\"><stop offset=\"0\" stop-color=\"#30363A\" stop-opacity=\"0.55\"/><stop offset=\"0.55\" stop-color=\"#30363A\" stop-opacity=\"0.33\"/><stop offset=\"1\" stop-color=\"#30363A\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"j14\" gradientUnits=\"userSpaceOnUse\" cx=\"402\" cy=\"9\" r=\"242\"><stop offset=\"0\" stop-color=\"#30363A\" stop-opacity=\"0.55\"/><stop offset=\"0.55\" stop-color=\"#30363A\" stop-opacity=\"0.33\"/><stop offset=\"1\" stop-color=\"#30363A\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"j15\" gradientUnits=\"userSpaceOnUse\" cx=\"402\" cy=\"609\" r=\"242\"><stop offset=\"0\" stop-color=\"#30363A\" stop-opacity=\"0.55\"/><stop offset=\"0.55\" stop-color=\"#30363A\" stop-opacity=\"0.33\"/><stop offset=\"1\" stop-color=\"#30363A\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"j16\" gradientUnits=\"userSpaceOnUse\" cx=\"257\" cy=\"235\" r=\"212\"><stop offset=\"0\" stop-color=\"#30363A\" stop-opacity=\"0.55\"/><stop offset=\"0.55\" stop-color=\"#30363A\" stop-opacity=\"0.33\"/><stop offset=\"1\" stop-color=\"#30363A\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"j17\" gradientUnits=\"userSpaceOnUse\" cx=\"257\" cy=\"835\" r=\"212\"><stop offset=\"0\" stop-color=\"#30363A\" stop-opacity=\"0.55\"/><stop offset=\"0.55\" stop-color=\"#30363A\" stop-opacity=\"0.33\"/><stop offset=\"1\" stop-color=\"#30363A\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"j18\" gradientUnits=\"userSpaceOnUse\" cx=\"857\" cy=\"235\" r=\"212\"><stop offset=\"0\" stop-color=\"#30363A\" stop-opacity=\"0.55\"/><stop offset=\"0.55\" stop-color=\"#30363A\" stop-opacity=\"0.33\"/><stop offset=\"1\" stop-color=\"#30363A\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"j19\" gradientUnits=\"userSpaceOnUse\" cx=\"857\" cy=\"835\" r=\"212\"><stop offset=\"0\" stop-color=\"#30363A\" stop-opacity=\"0.55\"/><stop offset=\"0.55\" stop-color=\"#30363A\" stop-opacity=\"0.33\"/><stop offset=\"1\" stop-color=\"#30363A\" stop-opacity=\"0\"/></radialGradient></defs><path d=\"M268,197Q239,223 193,231Q146,239 94,232Q42,226 2,198Q-38,170 -29,136Q-20,102 29,93Q78,84 122,78Q165,72 217,88Q269,103 283,137Z\" fill=\"url(#j0)\"/><path d=\"M268,797Q239,823 193,831Q146,839 94,832Q42,826 2,798Q-38,770 -29,736Q-20,702 29,693Q78,684 122,678Q165,672 217,688Q269,703 283,737Z\" fill=\"url(#j1)\"/><path d=\"M868,197Q839,223 793,231Q746,239 694,232Q642,226 602,198Q562,170 571,136Q580,102 629,93Q678,84 722,78Q765,72 817,88Q869,103 883,137Z\" fill=\"url(#j2)\"/><path d=\"M868,797Q839,823 793,831Q746,839 694,832Q642,826 602,798Q562,770 571,736Q580,702 629,693Q678,684 722,678Q765,672 817,688Q869,703 883,737Z\" fill=\"url(#j3)\"/><path d=\"M80,152Q26,140 -13,84Q-52,28 -83,-23Q-114,-74 -125,-139Q-135,-204 -92,-216Q-49,-229 5,-218Q58,-207 86,-137Q113,-67 149,1Q184,70 159,117Z\" fill=\"url(#j4)\"/><path d=\"M80,752Q26,740 -13,684Q-52,628 -83,577Q-114,526 -125,461Q-135,396 -92,384Q-49,371 5,382Q58,393 86,463Q113,533 149,601Q184,670 159,717Z\" fill=\"url(#j5)\"/><path d=\"M680,152Q626,140 587,84Q548,28 517,-23Q486,-74 475,-139Q465,-204 508,-216Q551,-229 605,-218Q658,-207 686,-137Q713,-67 749,1Q784,70 759,117Z\" fill=\"url(#j6)\"/><path d=\"M680,752Q626,740 587,684Q548,628 517,577Q486,526 475,461Q465,396 508,384Q551,371 605,382Q658,393 686,463Q713,533 749,601Q784,670 759,717Z\" fill=\"url(#j7)\"/><path d=\"M-436,138Q-365,104 -325,58Q-285,12 -212,36Q-139,59 -94,89Q-49,118 -30,162Q-11,205 -77,229Q-142,254 -209,285Q-275,316 -361,297Q-447,278 -477,225Z\" fill=\"url(#j8)\"/><path d=\"M-436,738Q-365,704 -325,658Q-285,612 -212,636Q-139,659 -94,689Q-49,718 -30,762Q-11,805 -77,829Q-142,854 -209,885Q-275,916 -361,897Q-447,878 -477,825Z\" fill=\"url(#j9)\"/><path d=\"M164,138Q235,104 275,58Q315,12 388,36Q461,59 506,89Q551,118 570,162Q589,205 523,229Q458,254 391,285Q325,316 239,297Q153,278 123,225Z\" fill=\"url(#j10)\"/><path d=\"M164,738Q235,704 275,658Q315,612 388,636Q461,659 506,689Q551,718 570,762Q589,805 523,829Q458,854 391,885Q325,916 239,897Q153,878 123,825Z\" fill=\"url(#j11)\"/><path d=\"M-211,157Q-246,156 -273,106Q-300,56 -309,-11Q-318,-79 -288,-115Q-257,-151 -223,-139Q-188,-128 -162,-100Q-135,-72 -124,-25Q-113,22 -102,94Q-90,166 -133,162Z\" fill=\"url(#j12)\"/><path d=\"M-211,757Q-246,756 -273,706Q-300,656 -309,589Q-318,521 -288,485Q-257,449 -223,461Q-188,472 -162,500Q-135,528 -124,575Q-113,622 -102,694Q-90,766 -133,762Z\" fill=\"url(#j13)\"/><path d=\"M389,157Q354,156 327,106Q300,56 291,-11Q282,-79 312,-115Q343,-151 377,-139Q412,-128 438,-100Q465,-72 476,-25Q487,22 498,94Q510,166 467,162Z\" fill=\"url(#j14)\"/><path d=\"M389,757Q354,756 327,706Q300,656 291,589Q282,521 312,485Q343,449 377,461Q412,472 438,500Q465,528 476,575Q487,622 498,694Q510,766 467,762Z\" fill=\"url(#j15)\"/><path d=\"M241,364Q216,333 196,299Q176,264 166,206Q156,148 190,134Q224,119 249,118Q274,118 308,129Q341,141 350,199Q358,258 341,303Q323,349 295,372Z\" fill=\"url(#j16)\"/><path d=\"M241,964Q216,933 196,899Q176,864 166,806Q156,748 190,734Q224,719 249,718Q274,718 308,729Q341,741 350,799Q358,858 341,903Q323,949 295,972Z\" fill=\"url(#j17)\"/><path d=\"M841,364Q816,333 796,299Q776,264 766,206Q756,148 790,134Q824,119 849,118Q874,118 908,129Q941,141 950,199Q958,258 941,303Q923,349 895,372Z\" fill=\"url(#j18)\"/><path d=\"M841,964Q816,933 796,899Q776,864 766,806Q756,748 790,734Q824,719 849,718Q874,718 908,729Q941,741 950,799Q958,858 941,903Q923,949 895,972Z\" fill=\"url(#j19)\"/><defs><radialGradient id=\"d0\" gradientUnits=\"userSpaceOnUse\" cx=\"207\" cy=\"-101\" r=\"141\"><stop offset=\"0\" stop-color=\"#0C0E10\" stop-opacity=\"0.85\"/><stop offset=\"0.55\" stop-color=\"#0C0E10\" stop-opacity=\"0.51\"/><stop offset=\"1\" stop-color=\"#0C0E10\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"d1\" gradientUnits=\"userSpaceOnUse\" cx=\"207\" cy=\"499\" r=\"141\"><stop offset=\"0\" stop-color=\"#0C0E10\" stop-opacity=\"0.85\"/><stop offset=\"0.55\" stop-color=\"#0C0E10\" stop-opacity=\"0.51\"/><stop offset=\"1\" stop-color=\"#0C0E10\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"d2\" gradientUnits=\"userSpaceOnUse\" cx=\"264\" cy=\"49\" r=\"196\"><stop offset=\"0\" stop-color=\"#0C0E10\" stop-opacity=\"0.85\"/><stop offset=\"0.55\" stop-color=\"#0C0E10\" stop-opacity=\"0.51\"/><stop offset=\"1\" stop-color=\"#0C0E10\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"d3\" gradientUnits=\"userSpaceOnUse\" cx=\"264\" cy=\"649\" r=\"196\"><stop offset=\"0\" stop-color=\"#0C0E10\" stop-opacity=\"0.85\"/><stop offset=\"0.55\" stop-color=\"#0C0E10\" stop-opacity=\"0.51\"/><stop offset=\"1\" stop-color=\"#0C0E10\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"d4\" gradientUnits=\"userSpaceOnUse\" cx=\"-38\" cy=\"4\" r=\"141\"><stop offset=\"0\" stop-color=\"#0C0E10\" stop-opacity=\"0.85\"/><stop offset=\"0.55\" stop-color=\"#0C0E10\" stop-opacity=\"0.51\"/><stop offset=\"1\" stop-color=\"#0C0E10\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"d5\" gradientUnits=\"userSpaceOnUse\" cx=\"-38\" cy=\"604\" r=\"141\"><stop offset=\"0\" stop-color=\"#0C0E10\" stop-opacity=\"0.85\"/><stop offset=\"0.55\" stop-color=\"#0C0E10\" stop-opacity=\"0.51\"/><stop offset=\"1\" stop-color=\"#0C0E10\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"d6\" gradientUnits=\"userSpaceOnUse\" cx=\"562\" cy=\"4\" r=\"141\"><stop offset=\"0\" stop-color=\"#0C0E10\" stop-opacity=\"0.85\"/><stop offset=\"0.55\" stop-color=\"#0C0E10\" stop-opacity=\"0.51\"/><stop offset=\"1\" stop-color=\"#0C0E10\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"d7\" gradientUnits=\"userSpaceOnUse\" cx=\"562\" cy=\"604\" r=\"141\"><stop offset=\"0\" stop-color=\"#0C0E10\" stop-opacity=\"0.85\"/><stop offset=\"0.55\" stop-color=\"#0C0E10\" stop-opacity=\"0.51\"/><stop offset=\"1\" stop-color=\"#0C0E10\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"d8\" gradientUnits=\"userSpaceOnUse\" cx=\"-94\" cy=\"-91\" r=\"156\"><stop offset=\"0\" stop-color=\"#0C0E10\" stop-opacity=\"0.85\"/><stop offset=\"0.55\" stop-color=\"#0C0E10\" stop-opacity=\"0.51\"/><stop offset=\"1\" stop-color=\"#0C0E10\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"d9\" gradientUnits=\"userSpaceOnUse\" cx=\"-94\" cy=\"509\" r=\"156\"><stop offset=\"0\" stop-color=\"#0C0E10\" stop-opacity=\"0.85\"/><stop offset=\"0.55\" stop-color=\"#0C0E10\" stop-opacity=\"0.51\"/><stop offset=\"1\" stop-color=\"#0C0E10\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"d10\" gradientUnits=\"userSpaceOnUse\" cx=\"506\" cy=\"-91\" r=\"156\"><stop offset=\"0\" stop-color=\"#0C0E10\" stop-opacity=\"0.85\"/><stop offset=\"0.55\" stop-color=\"#0C0E10\" stop-opacity=\"0.51\"/><stop offset=\"1\" stop-color=\"#0C0E10\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"d11\" gradientUnits=\"userSpaceOnUse\" cx=\"506\" cy=\"509\" r=\"156\"><stop offset=\"0\" stop-color=\"#0C0E10\" stop-opacity=\"0.85\"/><stop offset=\"0.55\" stop-color=\"#0C0E10\" stop-opacity=\"0.51\"/><stop offset=\"1\" stop-color=\"#0C0E10\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"d12\" gradientUnits=\"userSpaceOnUse\" cx=\"106\" cy=\"80\" r=\"189\"><stop offset=\"0\" stop-color=\"#0C0E10\" stop-opacity=\"0.85\"/><stop offset=\"0.55\" stop-color=\"#0C0E10\" stop-opacity=\"0.51\"/><stop offset=\"1\" stop-color=\"#0C0E10\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"d13\" gradientUnits=\"userSpaceOnUse\" cx=\"106\" cy=\"680\" r=\"189\"><stop offset=\"0\" stop-color=\"#0C0E10\" stop-opacity=\"0.85\"/><stop offset=\"0.55\" stop-color=\"#0C0E10\" stop-opacity=\"0.51\"/><stop offset=\"1\" stop-color=\"#0C0E10\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"d14\" gradientUnits=\"userSpaceOnUse\" cx=\"706\" cy=\"80\" r=\"189\"><stop offset=\"0\" stop-color=\"#0C0E10\" stop-opacity=\"0.85\"/><stop offset=\"0.55\" stop-color=\"#0C0E10\" stop-opacity=\"0.51\"/><stop offset=\"1\" stop-color=\"#0C0E10\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"d15\" gradientUnits=\"userSpaceOnUse\" cx=\"706\" cy=\"680\" r=\"189\"><stop offset=\"0\" stop-color=\"#0C0E10\" stop-opacity=\"0.85\"/><stop offset=\"0.55\" stop-color=\"#0C0E10\" stop-opacity=\"0.51\"/><stop offset=\"1\" stop-color=\"#0C0E10\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"d16\" gradientUnits=\"userSpaceOnUse\" cx=\"-104\" cy=\"29\" r=\"156\"><stop offset=\"0\" stop-color=\"#0C0E10\" stop-opacity=\"0.85\"/><stop offset=\"0.55\" stop-color=\"#0C0E10\" stop-opacity=\"0.51\"/><stop offset=\"1\" stop-color=\"#0C0E10\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"d17\" gradientUnits=\"userSpaceOnUse\" cx=\"-104\" cy=\"629\" r=\"156\"><stop offset=\"0\" stop-color=\"#0C0E10\" stop-opacity=\"0.85\"/><stop offset=\"0.55\" stop-color=\"#0C0E10\" stop-opacity=\"0.51\"/><stop offset=\"1\" stop-color=\"#0C0E10\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"d18\" gradientUnits=\"userSpaceOnUse\" cx=\"496\" cy=\"29\" r=\"156\"><stop offset=\"0\" stop-color=\"#0C0E10\" stop-opacity=\"0.85\"/><stop offset=\"0.55\" stop-color=\"#0C0E10\" stop-opacity=\"0.51\"/><stop offset=\"1\" stop-color=\"#0C0E10\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"d19\" gradientUnits=\"userSpaceOnUse\" cx=\"496\" cy=\"629\" r=\"156\"><stop offset=\"0\" stop-color=\"#0C0E10\" stop-opacity=\"0.85\"/><stop offset=\"0.55\" stop-color=\"#0C0E10\" stop-opacity=\"0.51\"/><stop offset=\"1\" stop-color=\"#0C0E10\" stop-opacity=\"0\"/></radialGradient></defs><path d=\"M125,-74Q103,-84 114,-109Q124,-135 155,-154Q186,-174 211,-167Q236,-160 264,-167Q293,-173 298,-154Q303,-136 297,-116Q292,-95 265,-82Q238,-70 217,-41Q196,-13 177,-26Q158,-40 152,-53Z\" fill=\"url(#d0)\"/><path d=\"M125,526Q103,516 114,491Q124,465 155,446Q186,426 211,433Q236,440 264,433Q293,427 298,446Q303,464 297,484Q292,505 265,518Q238,530 217,559Q196,587 177,574Q158,560 152,547Z\" fill=\"url(#d1)\"/><path d=\"M239,174Q212,195 198,154Q185,113 195,74Q205,36 201,-5Q198,-46 221,-53Q244,-60 264,-67Q284,-74 306,-60Q327,-47 352,-13Q376,20 348,55Q320,90 310,115Q301,141 284,147Z\" fill=\"url(#d2)\"/><path d=\"M239,774Q212,795 198,754Q185,713 195,674Q205,636 201,595Q198,554 221,547Q244,540 264,533Q284,526 306,540Q327,553 352,587Q376,620 348,655Q320,690 310,715Q301,741 284,747Z\" fill=\"url(#d3)\"/><path d=\"M-131,44Q-101,14 -95,-2Q-88,-17 -70,-33Q-53,-48 -31,-51Q-10,-53 6,-49Q22,-45 57,-43Q92,-42 83,-14Q74,14 44,37Q14,60 -18,74Q-50,89 -86,96Q-121,104 -141,89Z\" fill=\"url(#d4)\"/><path d=\"M-131,644Q-101,614 -95,598Q-88,583 -70,567Q-53,552 -31,549Q-10,547 6,551Q22,555 57,557Q92,558 83,586Q74,614 44,637Q14,660 -18,674Q-50,689 -86,696Q-121,704 -141,689Z\" fill=\"url(#d5)\"/><path d=\"M469,44Q499,14 505,-2Q512,-17 530,-33Q547,-48 569,-51Q590,-53 606,-49Q622,-45 657,-43Q692,-42 683,-14Q674,14 644,37Q614,60 582,74Q550,89 514,96Q479,104 459,89Z\" fill=\"url(#d6)\"/><path d=\"M469,644Q499,614 505,598Q512,583 530,567Q547,552 569,549Q590,547 606,551Q622,555 657,557Q692,558 683,586Q674,614 644,637Q614,660 582,674Q550,689 514,696Q479,704 459,689Z\" fill=\"url(#d7)\"/><path d=\"M-157,17Q-181,14 -184,-23Q-186,-60 -173,-96Q-161,-133 -137,-147Q-114,-160 -92,-203Q-70,-246 -47,-233Q-24,-221 -25,-181Q-26,-142 -18,-113Q-10,-83 -28,-51Q-46,-18 -68,3Q-90,24 -111,22Z\" fill=\"url(#d8)\"/><path d=\"M-157,617Q-181,614 -184,577Q-186,540 -173,504Q-161,467 -137,453Q-114,440 -92,397Q-70,354 -47,367Q-24,379 -25,419Q-26,458 -18,487Q-10,517 -28,549Q-46,582 -68,603Q-90,624 -111,622Z\" fill=\"url(#d9)\"/><path d=\"M443,17Q419,14 416,-23Q414,-60 427,-96Q439,-133 463,-147Q486,-160 508,-203Q530,-246 553,-233Q576,-221 575,-181Q574,-142 582,-113Q590,-83 572,-51Q554,-18 532,3Q510,24 489,22Z\" fill=\"url(#d10)\"/><path d=\"M443,617Q419,614 416,577Q414,540 427,504Q439,467 463,453Q486,440 508,397Q530,354 553,367Q576,379 575,419Q574,458 582,487Q590,517 572,549Q554,582 532,603Q510,624 489,622Z\" fill=\"url(#d11)\"/><path d=\"M12,99Q8,82 26,63Q44,44 68,15Q92,-15 141,-30Q190,-46 190,-9Q190,28 215,40Q240,51 233,79Q226,106 195,134Q164,162 126,154Q87,146 35,170Q-17,193 -1,155Z\" fill=\"url(#d12)\"/><path d=\"M12,699Q8,682 26,663Q44,644 68,615Q92,585 141,570Q190,554 190,591Q190,628 215,640Q240,651 233,679Q226,706 195,734Q164,762 126,754Q87,746 35,770Q-17,793 -1,755Z\" fill=\"url(#d13)\"/><path d=\"M612,99Q608,82 626,63Q644,44 668,15Q692,-15 741,-30Q790,-46 790,-9Q790,28 815,40Q840,51 833,79Q826,106 795,134Q764,162 726,154Q687,146 635,170Q583,193 599,155Z\" fill=\"url(#d14)\"/><path d=\"M612,699Q608,682 626,663Q644,644 668,615Q692,585 741,570Q790,554 790,591Q790,628 815,640Q840,651 833,679Q826,706 795,734Q764,762 726,754Q687,746 635,770Q583,793 599,755Z\" fill=\"url(#d15)\"/><path d=\"M-243,42Q-242,16 -206,-2Q-170,-20 -138,-30Q-106,-40 -70,-47Q-34,-55 -7,-42Q20,-30 -3,-4Q-26,21 -29,38Q-32,54 -54,67Q-76,80 -104,88Q-132,96 -164,96Q-196,96 -220,82Z\" fill=\"url(#d16)\"/><path d=\"M-243,642Q-242,616 -206,598Q-170,580 -138,570Q-106,560 -70,553Q-34,545 -7,558Q20,570 -3,596Q-26,621 -29,638Q-32,654 -54,667Q-76,680 -104,688Q-132,696 -164,696Q-196,696 -220,682Z\" fill=\"url(#d17)\"/><path d=\"M357,42Q358,16 394,-2Q430,-20 462,-30Q494,-40 530,-47Q566,-55 593,-42Q620,-30 597,-4Q574,21 571,38Q568,54 546,67Q524,80 496,88Q468,96 436,96Q404,96 380,82Z\" fill=\"url(#d18)\"/><path d=\"M357,642Q358,616 394,598Q430,580 462,570Q494,560 530,553Q566,545 593,558Q620,570 597,596Q574,621 571,638Q568,654 546,667Q524,680 496,688Q468,696 436,696Q404,696 380,682Z\" fill=\"url(#d19)\"/><g fill=\"#0C0E10\"><path d=\"M99,55Q91,50 95,37Q99,23 109,11Q120,-2 132,-9Q145,-16 160,-22Q174,-28 174,-13Q173,1 182,8Q190,16 186,34Q183,52 163,58Q144,64 127,79Q110,95 109,78ZM99,655Q91,650 95,637Q99,623 109,611Q120,598 132,591Q145,584 160,578Q174,572 174,587Q173,601 182,608Q190,616 186,634Q183,652 163,658Q144,664 127,679Q110,695 109,678ZM-6,389Q-15,377 -9,356Q-4,335 3,320Q10,306 17,289Q24,272 40,253Q56,234 60,257Q64,279 76,284Q89,289 94,312Q99,334 79,351Q59,367 46,391Q32,415 18,408ZM594,389Q585,377 591,356Q596,335 603,320Q610,306 617,289Q624,272 640,253Q656,234 660,257Q664,279 676,284Q689,289 694,312Q699,334 679,351Q659,367 646,391Q632,415 618,408ZM149,40Q153,28 153,16Q153,3 166,-11Q178,-26 196,-30Q214,-35 238,-43Q261,-51 256,-31Q251,-11 246,2Q241,15 240,34Q240,54 217,68Q194,83 183,68Q172,53 159,53ZM149,640Q153,628 153,616Q153,603 166,589Q178,574 196,570Q214,565 238,557Q261,549 256,569Q251,589 246,602Q241,615 240,634Q240,654 217,668Q194,683 183,668Q172,653 159,653ZM25,440Q18,455 0,433Q-18,412 -43,408Q-69,405 -84,378Q-100,351 -81,342Q-62,333 -56,322Q-49,310 -35,298Q-21,286 -6,317Q9,348 31,360Q52,372 60,395Q68,418 50,421ZM625,440Q618,455 600,433Q582,412 557,408Q531,405 516,378Q500,351 519,342Q538,333 544,322Q551,310 565,298Q579,286 594,317Q609,348 631,360Q652,372 660,395Q668,418 650,421ZM-201,348Q-220,338 -203,312Q-186,285 -170,257Q-154,228 -126,224Q-98,219 -70,210Q-41,200 -34,220Q-26,239 -34,263Q-42,286 -58,306Q-73,326 -93,333Q-113,340 -137,363Q-161,387 -172,372ZM399,348Q380,338 397,312Q414,285 430,257Q446,228 474,224Q502,219 530,210Q559,200 566,220Q574,239 566,263Q558,286 542,306Q527,326 507,333Q487,340 463,363Q439,387 428,372ZM-10,360Q-30,350 -31,317Q-33,285 -10,255Q13,226 30,191Q47,156 64,179Q81,202 98,199Q115,195 135,205Q154,216 139,249Q124,282 112,314Q99,346 76,345Q53,344 31,357ZM590,360Q570,350 569,317Q567,285 590,255Q613,226 630,191Q647,156 664,179Q681,202 698,199Q715,195 735,205Q754,216 739,249Q724,282 712,314Q699,346 676,345Q653,344 631,357Z\"/></g><g fill=\"#222D23\"><path d=\"M-128,-26Q-123,-45 -98,-59Q-72,-74 -43,-62Q-15,-49 -3,-40Q9,-31 33,-23Q58,-14 49,2Q41,18 21,33Q1,47 -27,38Q-54,28 -88,30Q-123,32 -128,12ZM-128,574Q-123,555 -98,541Q-72,526 -43,538Q-15,551 -3,560Q9,569 33,577Q58,586 49,602Q41,618 21,633Q1,647 -27,638Q-54,628 -88,630Q-123,632 -128,612ZM472,-26Q477,-45 502,-59Q528,-74 557,-62Q585,-49 597,-40Q609,-31 633,-23Q658,-14 649,2Q641,18 621,33Q601,47 573,38Q546,28 512,30Q477,32 472,12ZM472,574Q477,555 502,541Q528,526 557,538Q585,551 597,560Q609,569 633,577Q658,586 649,602Q641,618 621,633Q601,647 573,638Q546,628 512,630Q477,632 472,612ZM-29,305Q-35,312 -43,321Q-52,330 -70,326Q-89,323 -101,314Q-114,306 -128,294Q-142,282 -129,272Q-115,263 -96,265Q-76,267 -57,261Q-38,255 -24,266Q-10,278 -17,288ZM571,305Q565,312 557,321Q548,330 530,326Q511,323 499,314Q486,306 472,294Q458,282 471,272Q485,263 504,265Q524,267 543,261Q562,255 576,266Q590,278 583,288ZM448,-66Q437,-58 415,-59Q394,-60 377,-84Q361,-108 344,-133Q327,-158 351,-160Q375,-162 378,-183Q382,-205 405,-185Q427,-166 456,-153Q484,-140 480,-117Q477,-94 468,-84ZM448,534Q437,542 415,541Q394,540 377,516Q361,492 344,467Q327,442 351,440Q375,438 378,417Q382,395 405,415Q427,434 456,447Q484,460 480,483Q477,506 468,516ZM478,412Q458,421 446,429Q435,438 414,439Q393,440 376,432Q358,424 345,411Q331,399 342,385Q353,372 377,372Q401,372 418,370Q435,368 452,374Q469,380 483,392ZM207,498Q204,488 203,471Q201,455 220,437Q239,420 258,420Q277,421 296,419Q315,418 310,437Q305,456 297,472Q288,488 274,503Q260,519 246,516Q231,513 220,511Z\"/></g><g fill=\"#553F27\"><path d=\"M395,11Q389,8 389,-1Q389,-10 393,-18Q398,-26 403,-25Q409,-25 411,-20Q412,-14 415,-9Q418,-4 413,-1Q408,2 404,8ZM395,611Q389,608 389,599Q389,590 393,582Q398,574 403,575Q409,575 411,580Q412,586 415,591Q418,596 413,599Q408,602 404,608ZM165,96Q161,91 169,85Q177,79 183,79Q189,78 197,77Q204,76 199,83Q194,90 192,95Q190,99 185,99Q180,100 174,100ZM111,488Q106,487 108,479Q109,471 114,465Q119,459 124,459Q129,459 133,462Q138,465 135,473Q133,480 128,483Q124,486 120,488ZM273,467Q269,468 262,466Q255,464 253,457Q251,449 253,445Q256,441 260,437Q263,432 269,439Q275,446 279,452Q282,458 279,461ZM-20,40Q-21,36 -16,30Q-12,25 -7,25Q-1,25 2,26Q6,26 5,30Q4,34 2,37Q-0,41 -6,45Q-11,50 -15,47ZM580,40Q579,36 584,30Q588,25 593,25Q599,25 602,26Q606,26 605,30Q604,34 602,37Q600,41 594,45Q589,50 585,47ZM558,465Q551,468 544,460Q538,453 530,449Q522,445 528,442Q534,439 535,433Q536,427 543,432Q550,438 554,443Q559,448 562,455ZM519,-22Q513,-24 521,-29Q528,-35 532,-39Q536,-43 540,-42Q545,-41 548,-38Q551,-34 545,-29Q540,-24 536,-21Q532,-17 528,-18ZM519,578Q513,576 521,571Q528,565 532,561Q536,557 540,558Q545,559 548,562Q551,566 545,571Q540,576 536,579Q532,583 528,582ZM274,152Q270,149 275,145Q280,141 285,138Q290,136 293,138Q295,141 297,144Q300,148 296,153Q293,159 286,160Q280,162 279,158ZM346,40Q342,37 342,30Q341,22 343,16Q345,9 350,8Q354,8 358,9Q362,11 361,18Q359,24 359,30Q359,36 355,39ZM346,640Q342,637 342,630Q341,622 343,616Q345,609 350,608Q354,608 358,609Q362,611 361,618Q359,624 359,630Q359,636 355,639ZM464,96Q458,93 453,90Q449,87 444,81Q440,75 441,69Q442,63 448,66Q454,69 459,71Q464,74 468,80Q472,86 471,92ZM350,115Q352,109 354,105Q356,100 361,99Q365,98 370,98Q374,97 377,101Q379,105 375,111Q372,117 366,116Q361,115 355,118ZM276,544Q271,543 267,544Q263,546 262,542Q260,537 259,534Q257,530 260,528Q263,525 268,528Q273,530 277,534Q281,537 281,542ZM388,411Q385,412 382,410Q379,409 374,407Q370,406 372,404Q375,402 375,398Q374,395 378,398Q382,401 386,402Q389,404 390,407ZM226,168Q224,165 224,159Q223,152 228,150Q233,148 237,144Q241,139 243,144Q245,148 244,154Q242,159 240,163Q237,166 233,169ZM86,-2Q82,-0 78,1Q75,3 68,3Q62,3 63,-1Q64,-5 66,-8Q68,-10 72,-10Q75,-11 78,-10Q81,-9 85,-7ZM86,598Q82,600 78,601Q75,603 68,603Q62,603 63,599Q64,595 66,592Q68,590 72,590Q75,589 78,590Q81,591 85,593ZM64,456Q62,459 57,458Q52,458 49,457Q45,457 41,454Q37,452 40,449Q43,446 48,445Q52,443 59,444Q65,445 66,449ZM126,428Q124,425 129,422Q134,419 138,417Q143,415 146,416Q149,417 152,421Q154,424 148,427Q142,431 137,434Q132,438 130,435ZM136,-5Q136,-11 137,-15Q138,-19 141,-22Q144,-24 148,-26Q152,-27 153,-24Q154,-20 152,-16Q149,-12 147,-8Q144,-5 140,-2ZM136,595Q136,589 137,585Q138,581 141,578Q144,576 148,574Q152,573 153,576Q154,580 152,584Q149,588 147,592Q144,595 140,598ZM396,351Q392,352 388,352Q383,353 379,349Q375,344 374,339Q373,335 377,332Q382,330 388,332Q394,334 397,338Q401,343 400,347ZM473,107Q468,110 462,107Q456,104 452,103Q447,101 447,98Q448,95 449,92Q450,88 455,88Q461,87 463,92Q465,96 472,100ZM265,128Q261,123 268,120Q276,117 281,119Q286,122 290,123Q295,125 293,129Q291,133 286,135Q280,136 274,139Q267,142 269,137ZM219,126Q215,126 210,126Q206,125 203,121Q201,117 203,114Q204,112 206,110Q208,108 211,111Q215,114 218,116Q222,118 222,122ZM278,169Q276,166 277,162Q277,158 281,151Q284,145 287,149Q290,153 291,155Q293,157 294,163Q296,168 290,169Q285,170 282,171ZM-18,523Q-22,526 -28,524Q-35,521 -41,515Q-47,508 -41,506Q-34,504 -33,498Q-31,492 -26,499Q-21,506 -18,509Q-14,513 -15,517ZM582,523Q578,526 572,524Q565,521 559,515Q553,508 559,506Q566,504 567,498Q569,492 574,499Q579,506 582,509Q586,513 585,517ZM132,183Q130,178 134,171Q139,165 144,163Q149,161 156,157Q163,154 165,160Q166,166 162,173Q159,181 152,183Q146,185 140,187ZM2,456Q4,452 6,448Q8,444 12,444Q16,445 21,444Q26,444 23,448Q20,452 18,455Q17,458 13,459Q9,460 5,460ZM602,456Q604,452 606,448Q608,444 612,444Q616,445 621,444Q626,444 623,448Q620,452 618,455Q617,458 613,459Q609,460 605,460Z\"/></g><g fill=\"#0A0C0D\"><path d=\"M131,518Q131,517 133,516Q135,515 138,515Q141,514 141,516Q142,518 142,520Q143,521 140,523Q137,524 134,524Q131,523 131,521ZM200,142Q198,142 196,140Q195,138 194,135Q193,132 194,129Q196,127 198,127Q201,128 203,131Q205,134 204,137Q204,139 202,140ZM82,588Q80,586 79,584Q78,581 79,579Q81,577 81,573Q82,569 84,572Q86,574 86,577Q87,580 87,583Q87,586 85,588ZM363,15Q362,18 358,14Q355,10 353,7Q351,5 350,2Q349,-2 353,-1Q356,-1 359,-0Q363,1 365,4Q366,7 365,9ZM363,615Q362,618 358,614Q355,610 353,607Q351,605 350,602Q349,598 353,599Q356,599 359,600Q363,601 365,604Q366,607 365,609ZM365,109Q363,109 362,105Q361,101 364,98Q367,96 369,96Q370,95 371,97Q372,99 373,101Q373,103 372,105Q371,107 369,109ZM60,-10Q59,-12 60,-14Q60,-16 62,-18Q63,-21 67,-23Q70,-24 72,-22Q74,-19 71,-16Q68,-12 66,-9Q64,-5 62,-7ZM60,590Q59,588 60,586Q60,584 62,582Q63,579 67,577Q70,576 72,578Q74,581 71,584Q68,588 66,591Q64,595 62,593ZM464,561Q461,561 457,562Q454,563 453,560Q452,557 450,555Q449,553 449,550Q449,547 454,549Q458,551 462,553Q466,554 467,557ZM130,542Q129,538 135,538Q141,538 147,537Q153,535 155,539Q157,543 156,547Q155,551 149,551Q142,551 140,550Q137,549 134,547ZM163,430Q159,432 159,426Q159,419 161,415Q163,411 165,408Q168,404 170,409Q171,414 175,417Q179,420 177,425Q175,431 171,430ZM301,154Q302,149 304,145Q307,141 312,140Q316,140 317,142Q318,145 321,147Q323,148 320,152Q317,155 314,154Q311,154 305,156ZM224,503Q226,499 230,497Q233,495 238,492Q242,489 242,493Q243,497 242,499Q241,501 240,503Q239,506 234,509Q230,511 226,509ZM255,408Q253,408 250,405Q248,403 247,399Q247,396 248,393Q249,391 251,393Q254,395 256,396Q258,397 260,401Q261,404 259,405ZM249,18Q245,19 241,21Q238,23 232,22Q227,20 228,16Q229,13 230,10Q230,6 235,8Q240,9 243,10Q246,11 249,14ZM249,618Q245,619 241,621Q238,623 232,622Q227,620 228,616Q229,613 230,610Q230,606 235,608Q240,609 243,610Q246,611 249,614ZM83,34Q81,35 79,33Q78,30 78,27Q78,23 80,22Q82,20 84,22Q85,24 86,26Q86,28 87,30Q87,32 85,32ZM104,443Q102,445 98,442Q94,440 93,435Q92,431 92,426Q92,421 96,423Q100,425 103,428Q106,430 109,434Q112,438 109,439ZM468,334Q465,334 467,331Q469,328 471,327Q474,326 476,325Q479,324 478,326Q478,329 477,331Q475,333 474,334Q473,336 472,335ZM411,528Q410,530 408,529Q405,527 403,526Q401,524 400,522Q399,520 401,519Q404,519 407,518Q410,518 412,520Q414,523 413,525ZM240,77Q242,75 244,75Q247,75 249,75Q250,75 253,75Q257,76 254,77Q251,79 250,81Q249,83 247,82Q245,80 242,79ZM247,24Q248,21 250,19Q252,17 254,14Q256,10 259,11Q262,11 260,15Q259,18 258,20Q257,22 256,23Q254,24 250,26Z\"/></g></svg>";
+
+const KAMUFLAZ = `url("data:image/svg+xml,${encodeURIComponent(KAMUFLAZ_SVG)}")`;
 
 const display = { fontFamily: "'Barlow Condensed', 'Arial Narrow', sans-serif" };
 const body = { fontFamily: "'IBM Plex Sans', system-ui, sans-serif" };
@@ -98,9 +133,10 @@ const PLANY = {
 const KLUCZ = "dziennik:sesje";
 const KLUCZ_WSK = "dziennik:wskazowki";
 const KLUCZ_GH = "dziennik:github";
+const KLUCZ_MOTYW = "dziennik:motyw";
 
-const WERSJA = "1.4";
-const DATA_WERSJI = "2026-08-27";
+const WERSJA = "1.8";
+const DATA_WERSJI = "2026-08-29";
 
 /* ---------------------------------------------------------------
    SYNCHRONIZACJA Z GITHUBEM
@@ -380,6 +416,7 @@ function DziennikTreningowy() {
   const [awaria, setAwaria] = useState(null);
   const [rodzajZapisu, setRodzajZapisu] = useState(null);
   const [konfigGH, setKonfigGH] = useState(null);
+  const [motyw, setMotyw] = useState("multicam");
   const [stanGH, setStanGH] = useState({ etap: "bezczynny", tekst: "" });
   const [widok, setWidok] = useState("start");
   const [aktywna, setAktywna] = useState(null);
@@ -406,9 +443,30 @@ function DziennikTreningowy() {
       } catch (e) {
         // brak konfiguracji synchronizacji
       }
+      try {
+        const m = await magazyn.czytaj(KLUCZ_MOTYW);
+        if (m && MOTYWY[m]) {
+          C = { ...MOTYWY[m] };
+          setMotyw(m);
+        }
+      } catch (e) {
+        // brak zapisanego motywu — zostaje domyślny
+      }
       setLadowanie(false);
     })();
   }, []);
+
+  const zmienMotyw = async () => {
+    const kolejny = motyw === "multicam" ? "papier" : "multicam";
+    C = { ...MOTYWY[kolejny] };
+    setMotyw(kolejny);
+    document.body.style.background = C.paper;
+    await magazyn.pisz(KLUCZ_MOTYW, kolejny);
+  };
+
+  useEffect(() => {
+    document.body.style.background = C.paper;
+  }, [motyw]);
 
   const zapisz = async (noweSesje) => {
     setSesje(noweSesje);
@@ -523,18 +581,18 @@ function DziennikTreningowy() {
 
   if (ladowanie) {
     return (
-      <div style={{ ...body, background: C.paper, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: C.steel }}>
-        <style>{FONTS}</style>
+      <div style={{ ...body, background: C.paper, color: C.ink, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: C.steel }}>
+        <style>{fonty()}</style>
         <span style={{ ...mono, fontSize: 13, letterSpacing: "0.08em" }}>WCZYTUJĘ…</span>
       </div>
     );
   }
 
   return (
-    <div style={{ ...body, background: C.paper, minHeight: "100vh", color: C.ink }}>
-      <style>{FONTS}</style>
+    <div style={{ ...body, background: C.paper, minHeight: "100vh", color: C.ink, backgroundImage: C.kamuflaz ? KAMUFLAZ : "none", backgroundSize: C.kamuflaz ? "340px 340px" : "auto", backgroundAttachment: "fixed" }}>
+      <style>{fonty()}</style>
       <div style={{ maxWidth: 560, margin: "0 auto", padding: "0 0 96px" }}>
-        <Naglowek widok={widok} setWidok={setWidok} liczba={sesje.length} />
+        <Naglowek widok={widok} setWidok={setWidok} liczba={sesje.length} motyw={motyw} zmienMotyw={zmienMotyw} />
 
         {<PasekAwarii rodzaj={rodzajZapisu} awaria={awaria} />}
 
@@ -609,7 +667,7 @@ function PasekAwarii({ rodzaj, awaria }) {
 /* ---------------------------------------------------------------
    NAGŁÓWEK
    --------------------------------------------------------------- */
-function Naglowek({ widok, setWidok, liczba }) {
+function Naglowek({ widok, setWidok, liczba, motyw, zmienMotyw }) {
   const slowo =
     liczba === 1 ? "SESJA"
       : liczba % 10 >= 2 && liczba % 10 <= 4 && (liczba < 10 || liczba > 20) ? "SESJE"
@@ -617,8 +675,18 @@ function Naglowek({ widok, setWidok, liczba }) {
   return (
     <div style={{ borderBottom: `2px solid ${C.ink}`, padding: "18px 16px 12px", marginBottom: 16 }}>
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
-        <h1 style={{ ...display, margin: 0, fontSize: 30, fontWeight: 700, textTransform: "uppercase" }}>Dziennik</h1>
-        <span style={{ ...mono, fontSize: 11, color: C.steel, letterSpacing: "0.1em" }}>{liczba} {slowo}</span>
+        <h1 style={{ ...display, margin: 0, fontSize: 30, fontWeight: 700, textTransform: "uppercase", letterSpacing: C.kamuflaz ? "0.02em" : 0 }}>Dziennik</h1>
+        <span style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <span style={{ ...mono, fontSize: 11, color: C.steel, letterSpacing: "0.1em" }}>{liczba} {slowo}</span>
+          <button
+            onClick={zmienMotyw}
+            className="dt-focus"
+            aria-label={`Motyw: ${MOTYWY[motyw].nazwa}. Stuknij, aby zmienić.`}
+            style={{ background: "none", border: "none", padding: 2, cursor: "pointer", lineHeight: 0 }}
+          >
+            <span style={{ display: "inline-block", width: 15, height: 15, background: C.ink, border: `1px solid ${C.steel}` }} />
+          </button>
+        </span>
       </div>
       {widok !== "sesja" && (
         <div style={{ display: "flex", gap: 14, marginTop: 10 }}>
@@ -746,7 +814,7 @@ function Stoper({ przerwa, przerwaPo }) {
         className="dt-focus"
         style={{
           ...mono, width: "100%", marginTop: 10, cursor: "pointer",
-          background: skonczone ? C.ok : C.ink, color: "#FFFFFF", border: "none",
+          background: skonczone ? C.ok : C.ink, color: C.naSygnale, border: "none",
           padding: "13px 0", fontSize: 15, fontWeight: 700, letterSpacing: "0.06em",
         }}
       >
@@ -918,7 +986,7 @@ function Wskazowki({ plan, tekst, zapisz }) {
   }
 
   return (
-    <div style={{ marginBottom: 20, background: "#FFFFFF", border: `1px solid ${C.signal}`, borderLeft: `4px solid ${C.signal}`, padding: "12px 13px" }}>
+    <div style={{ marginBottom: 20, background: C.card, border: `1px solid ${C.signal}`, borderLeft: `4px solid ${C.signal}`, padding: "12px 13px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
         <span style={{ ...mono, fontSize: 10.5, letterSpacing: "0.12em", color: C.signal, fontWeight: 700 }}>
           NA TEN TRENING
@@ -941,7 +1009,7 @@ function Wskazowki({ plan, tekst, zapisz }) {
             rows={7}
             placeholder="Wklej tu uwagi na następny raz — np. jakie ciężary podnieść."
             className="dt-focus"
-            style={{ ...body, width: "100%", background: "#FFFFFF", border: `1px solid ${C.line}`, padding: 10, fontSize: 14, color: C.ink, resize: "vertical", lineHeight: 1.5 }}
+            style={{ ...body, width: "100%", background: C.pole, border: `1px solid ${C.line}`, padding: 10, fontSize: 14, color: C.ink, resize: "vertical", lineHeight: 1.5 }}
           />
           <button
             onClick={() => { zapisz(plan, ""); setRoboczy(""); setEdycja(false); }}
@@ -989,7 +1057,7 @@ function Rozgrzewka({ zaznaczone, przelacz }) {
                 className="dt-focus"
                 style={{ width: "100%", display: "flex", alignItems: "center", gap: 11, background: "none", border: "none", borderTop: `1px solid ${C.line}`, padding: "11px 0", cursor: "pointer", textAlign: "left" }}
               >
-                <span style={{ width: 19, height: 19, flexShrink: 0, border: `2px solid ${zrobione ? C.ok : C.steel}`, background: zrobione ? C.ok : "transparent", color: C.card, fontSize: 12, lineHeight: "15px", textAlign: "center", fontWeight: 700 }}>
+                <span style={{ width: 19, height: 19, flexShrink: 0, border: `2px solid ${zrobione ? C.ok : C.steel}`, background: zrobione ? C.ok : "transparent", color: C.paper, fontSize: 12, lineHeight: "15px", textAlign: "center", fontWeight: 700 }}>
                   {zrobione ? "✓" : ""}
                 </span>
                 <span style={{ fontSize: 14, color: zrobione ? C.steel : C.ink, textDecoration: zrobione ? "line-through" : "none" }}>
@@ -1048,8 +1116,8 @@ function Cwiczenie({ numer, cw, wpis, ustawSerie, przelaczStrony, ostatnie }) {
             padding: "9px 11px",
             width: "100%",
             cursor: "pointer",
-            background: wpis.strony ? C.signal : "#FFFFFF",
-            color: wpis.strony ? "#FFFFFF" : C.inkSoft,
+            background: wpis.strony ? C.signal : C.pole,
+            color: wpis.strony ? C.naSygnale : C.inkSoft,
             border: `1px solid ${wpis.strony ? C.signal : C.line}`,
             fontSize: 11.5,
             letterSpacing: "0.04em",
@@ -1063,7 +1131,7 @@ function Cwiczenie({ numer, cw, wpis, ustawSerie, przelaczStrony, ostatnie }) {
               height: 17,
               flexShrink: 0,
               borderRadius: 9,
-              background: wpis.strony ? "#FFFFFF" : C.line,
+              background: wpis.strony ? C.naSygnale : C.line,
               position: "relative",
               display: "inline-block",
             }}
@@ -1076,7 +1144,7 @@ function Cwiczenie({ numer, cw, wpis, ustawSerie, przelaczStrony, ostatnie }) {
                 width: 13,
                 height: 13,
                 borderRadius: "50%",
-                background: wpis.strony ? C.signal : "#FFFFFF",
+                background: wpis.strony ? C.signal : C.pole,
                 transition: "left 0.15s",
               }}
             />
@@ -1164,10 +1232,10 @@ function Pole({ wartosc, zmien, jedn, duch }) {
         onKeyDown={(e) => { if (e.key === "Enter") { zatwierdz(); e.target.blur(); } }}
         placeholder={duch != null && duch !== "" ? String(duch) : "–"}
         className="dt-focus"
-        style={{ ...mono, width: "100%", background: "#FFFFFF", border: `1px solid ${C.line}`, padding: "11px 36px 11px 11px", fontSize: 16, color: C.ink, fontWeight: 600 }}
+        style={{ ...mono, width: "100%", background: C.pole, border: `1px solid ${C.line}`, padding: "11px 36px 11px 11px", fontSize: 16, color: C.ink, fontWeight: 600 }}
       />
       {podglad != null ? (
-        <span style={{ ...mono, position: "absolute", right: 8, fontSize: 12, color: C.ok, pointerEvents: "none", fontWeight: 700, background: "#FFFFFF", paddingLeft: 4 }}>
+        <span style={{ ...mono, position: "absolute", right: 8, fontSize: 12, color: C.ok, pointerEvents: "none", fontWeight: 700, background: C.pole, paddingLeft: 4 }}>
           = {podglad}
         </span>
       ) : (
@@ -1291,7 +1359,7 @@ function Import({ dodajSesje, setWidok }) {
         value={data}
         onChange={(e) => setData(e.target.value)}
         className="dt-focus"
-        style={{ ...mono, width: "100%", padding: "11px", fontSize: 14, border: `1px solid ${C.line}`, background: "#FFFFFF", color: C.ink, marginBottom: 10 }}
+        style={{ ...mono, width: "100%", padding: "11px", fontSize: 14, border: `1px solid ${C.line}`, background: C.pole, color: C.ink, marginBottom: 10 }}
       />
 
       <textarea
@@ -1300,7 +1368,7 @@ function Import({ dodajSesje, setWidok }) {
         rows={12}
         placeholder={"Wyciskanie hantlami na skosie: 56kg×8  56kg×8\nŚciąganie drążka: 52kg×10  52kg×10"}
         className="dt-focus"
-        style={{ ...mono, width: "100%", background: "#FFFFFF", border: `1px solid ${C.line}`, padding: 11, fontSize: 13, color: C.ink, lineHeight: 1.6, resize: "vertical" }}
+        style={{ ...mono, width: "100%", background: C.pole, border: `1px solid ${C.line}`, padding: 11, fontSize: 13, color: C.ink, lineHeight: 1.6, resize: "vertical" }}
       />
 
       <button
@@ -1369,7 +1437,7 @@ function Chmura({ konfig, zapiszKonfig, wyslij, pobierz, stan, sesje, wskazowki 
         autoCapitalize="none"
         spellCheck={false}
         className="dt-focus"
-        style={{ ...mono, width: "100%", background: "#FFFFFF", border: `1px solid ${C.line}`, padding: "11px", fontSize: 14, color: C.ink }}
+        style={{ ...mono, width: "100%", background: C.pole, border: `1px solid ${C.line}`, padding: "11px", fontSize: 14, color: C.ink }}
       />
     </div>
   );
@@ -1420,7 +1488,7 @@ function Chmura({ konfig, zapiszKonfig, wyslij, pobierz, stan, sesje, wskazowki 
           autoCapitalize="none"
           spellCheck={false}
           className="dt-focus"
-          style={{ ...mono, width: "100%", background: "#FFFFFF", border: `1px solid ${C.line}`, padding: "11px", fontSize: 14, color: C.ink }}
+          style={{ ...mono, width: "100%", background: C.pole, border: `1px solid ${C.line}`, padding: "11px", fontSize: 14, color: C.ink }}
         />
       </div>
 
@@ -1437,7 +1505,7 @@ function Chmura({ konfig, zapiszKonfig, wyslij, pobierz, stan, sesje, wskazowki 
           onClick={() => (potwierdzenie ? (pobierz(), setPotwierdzenie(false)) : setPotwierdzenie(true))}
           disabled={!gotowy}
           className="dt-focus"
-          style={{ ...mono, flex: 1, background: potwierdzenie ? C.hot : "transparent", color: potwierdzenie ? "#FFFFFF" : gotowy ? C.ink : C.steel, border: `1px solid ${potwierdzenie ? C.hot : C.line}`, padding: "14px 0", fontSize: 12, letterSpacing: "0.06em", cursor: gotowy ? "pointer" : "default", fontWeight: 600 }}
+          style={{ ...mono, flex: 1, background: potwierdzenie ? C.hot : "transparent", color: potwierdzenie ? C.naSygnale : gotowy ? C.ink : C.steel, border: `1px solid ${potwierdzenie ? C.hot : C.line}`, padding: "14px 0", fontSize: 12, letterSpacing: "0.06em", cursor: gotowy ? "pointer" : "default", fontWeight: 600 }}
         >
           {potwierdzenie ? "NADPISAĆ?" : "↓ POBIERZ"}
         </button>
@@ -1530,7 +1598,7 @@ function Historia({ sesje, usunSesje, setWidok }) {
                 {doUsuniecia === s.id ? (
                   <div style={{ display: "flex", gap: 14, marginTop: 12, alignItems: "center" }}>
                     <span style={{ ...mono, fontSize: 11, color: C.hot }}>USUNĄĆ NA STAŁE?</span>
-                    <button onClick={() => { usunSesje(s.id); setDoUsuniecia(null); }} className="dt-focus" style={{ ...mono, background: C.hot, color: "#fff", border: "none", padding: "6px 12px", fontSize: 11, cursor: "pointer" }}>
+                    <button onClick={() => { usunSesje(s.id); setDoUsuniecia(null); }} className="dt-focus" style={{ ...mono, background: C.hot, color: C.naSygnale, border: "none", padding: "6px 12px", fontSize: 11, cursor: "pointer" }}>
                       TAK, USUŃ
                     </button>
                     <button onClick={() => setDoUsuniecia(null)} className="dt-focus" style={{ ...mono, background: "none", border: "none", color: C.steel, fontSize: 11, cursor: "pointer" }}>
