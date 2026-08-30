@@ -97,6 +97,72 @@ const ROZGRZEWKA = [
   { id: "w7", nazwa: "Most boczny na piłce", detal: "30 s / stronę" },
 ];
 
+const GRUPY = [
+  { id: "klatka-gora", nazwa: "Klatka — góra" },
+  { id: "klatka-srodek", nazwa: "Klatka — środek i dół" },
+  { id: "plecy-szerokosc", nazwa: "Plecy — szerokość" },
+  { id: "plecy-grubosc", nazwa: "Plecy — grubość i kaptur" },
+  { id: "barki", nazwa: "Barki" },
+  { id: "triceps", nazwa: "Triceps" },
+  { id: "biceps", nazwa: "Biceps i przedramię" },
+  { id: "nogi", nazwa: "Nogi i pośladki" },
+  { id: "gorset", nazwa: "Gorset i brzuch" },
+];
+
+const BAZA = [
+  { id: "k1", grupa: "klatka-gora", nazwa: "Wyciskanie hantlami na skosie", en: "Incline Dumbbell Press", opis: "Ławka 15–30°, wyżej przenosi pracę na barki. Łopatki ściągnięte i wciśnięte w ławkę przez całą serię. Hantle nad dolną częścią klatki, łokcie ok. 45° od tułowia. Opuszczaj do lekkiego rozciągnięcia, nie na siłę.", opisPartie: "Górna część klatki (obojczykowa), przedni bark, triceps.", serie: 4, zakres: "8–10", jedn: "kg", przerwa: 150, przerwaPo: 180, uwaga: "Dół pleców przyklejony do ławki. Jeśli się odrywa, ciężar jest za duży.", },
+  { id: "k2", grupa: "klatka-gora", nazwa: "Wyciskanie sztangą na skosie", en: "Incline Barbell Press", opis: "Ławka 15–30°. Łopatki ściągnięte i wbite w ławkę, stopy pewnie na podłodze. Sztanga schodzi tuż pod obojczyki. Łokcie ok. 45°, nadgarstki nad łokciami.", opisPartie: "Górna część klatki, przedni bark, triceps.", serie: 4, zakres: "6–8", jedn: "kg", przerwa: 180, przerwaPo: 180, uwaga: "Pchaj stopami w podłogę zamiast unosić biodra.", },
+  { id: "k3", grupa: "klatka-gora", nazwa: "Rozpiętki z wyciągu dolnego w górę", en: "Low-to-High Cable Fly", opis: "Uchwyty z najniższej pozycji, lekki wykrok. Łokcie minimalnie ugięte i taki kąt utrzymujesz — ruch odbywa się w barku, nie w łokciu. Prowadź ręce po łuku w górę i do środka.", opisPartie: "Górna klatka w izolacji, bez udziału tricepsa.", serie: 3, zakres: "12", jedn: "kg", przerwa: 90, przerwaPo: 150, },
+  { id: "k4", grupa: "klatka-gora", nazwa: "Wyciskanie na maszynie ze skosem", en: "Incline Chest Press Machine", opis: "Ustaw siedzisko tak, by uchwyty były na wysokości górnej części klatki. Plecy i głowa na oparciu, łopatki ściągnięte. Nie prostuj łokci do pełnej blokady.", opisPartie: "Górna klatka, przedni bark, triceps.", serie: 3, zakres: "10–12", jedn: "kg", przerwa: 120, przerwaPo: 150, uwaga: "Bezpieczna alternatywa, gdy plecy nie chcą zostać na ławce przy wolnych ciężarach.", },
+  { id: "k5", grupa: "klatka-gora", nazwa: "Pompki z nogami na podwyższeniu", en: "Decline Push-Up", opis: "Stopy na ławce, dłonie nieco szerzej niż barki. Ciało w jednej linii, pośladki i brzuch napięte przez cały czas. Łokcie 45° od tułowia, nie na boki.", opisPartie: "Górna klatka, przedni bark, triceps, gorset stabilizacyjnie.", serie: 3, zakres: "10–15", jedn: "powt.", przerwa: 90, przerwaPo: 120, bezPowtorzen: true, uwaga: "Nie pozwól biodrom opaść — wtedy pracują lędźwie.", },
+  { id: "k6", grupa: "klatka-srodek", nazwa: "Wyciskanie hantlami na ławce płaskiej", en: "Flat Dumbbell Press", opis: "Hantle nad środkiem klatki, łokcie pod kątem 45°. Opuszczaj do poziomu klatki lub minimalnie niżej. Na górze nie stukaj hantlami i nie blokuj łokci.", opisPartie: "Środkowa i dolna część klatki, przedni bark, triceps.", serie: 3, zakres: "10", jedn: "kg", przerwa: 120, przerwaPo: 150, },
+  { id: "k7", grupa: "klatka-srodek", nazwa: "Wyciskanie sztangą na ławce płaskiej", en: "Flat Barbell Bench Press", opis: "Łopatki ściągnięte, stopy na podłodze. Sztanga schodzi do dolnej części klatki. Łokcie nie rozłożone na boki. Ruch w dół kontrolowany, bez odbijania od klatki.", opisPartie: "Klatka piersiowa, przedni bark, triceps.", serie: 4, zakres: "6–8", jedn: "kg", przerwa: 180, przerwaPo: 180, uwaga: "Bez asekuracji nie schodź do ciężaru, którego nie odłożysz sam.", },
+  { id: "k8", grupa: "klatka-srodek", nazwa: "Rozpiętki na maszynie", en: "Pec Deck", opis: "Plecy płasko na oparciu, przedramiona na poduszkach. Zwieraj ramiona łukiem, w końcówce sekunda spięcia. Wracaj wolno, bez puszczania ciężaru.", opisPartie: "Klatka w izolacji, głównie część mostkowa.", serie: 3, zakres: "12–15", jedn: "kg", przerwa: 75, przerwaPo: 120, },
+  { id: "k9", grupa: "klatka-srodek", nazwa: "Krzyżowanie linek", en: "Cable Crossover", opis: "Linki na wysokości barków, lekki wykrok, tułów minimalnie pochylony. Łokcie w stałym lekkim ugięciu. Ręce spotykają się przed brzuchem, krótkie spięcie.", opisPartie: "Klatka, szczególnie przyśrodkowa część przy zwarciu.", serie: 3, zakres: "12", jedn: "kg", przerwa: 75, przerwaPo: 120, },
+  { id: "k10", grupa: "klatka-srodek", nazwa: "Pompki", en: "Push-Up", opis: "Dłonie pod barkami lub nieco szerzej. Ciało w jednej linii od pięt po głowę. Łopatki pracują — na dole zbliżają się, na górze rozsuwają. Łokcie 45°.", opisPartie: "Klatka, triceps, przedni bark, mięsień zębaty, gorset.", serie: 3, zakres: "12–20", jedn: "powt.", przerwa: 75, przerwaPo: 120, bezPowtorzen: true, },
+  { id: "p1", grupa: "plecy-szerokosc", nazwa: "Ściąganie drążka szerokim chwytem", en: "Wide-Grip Lat Pulldown", opis: "Uda pod wałkiem. Zanim pociągniesz, opuść barki w dół. Drążek do góry klatki, klatka wypchnięta. Odchylenie tułowia do 15°, nie więcej.", opisPartie: "Najszerszy grzbietu, obły większy, biceps.", serie: 4, zakres: "10", jedn: "kg", przerwa: 120, przerwaPo: 150, },
+  { id: "p2", grupa: "plecy-szerokosc", nazwa: "Ściąganie drążka chwytem neutralnym", en: "Neutral-Grip Lat Pulldown", opis: "Uchwyt V lub równoległy. Dłonie zwrócone do siebie, łokcie prowadzone blisko tułowia w dół i do tyłu. Zakres większy niż przy chwycie szerokim.", opisPartie: "Najszerszy grzbietu, biceps, ramienny. Łagodniejszy dla barku.", serie: 3, zakres: "10–12", jedn: "kg", przerwa: 120, przerwaPo: 150, uwaga: "Dobra opcja, gdy bark jest podrażniony.", },
+  { id: "p3", grupa: "plecy-szerokosc", nazwa: "Podciąganie z asystą", en: "Assisted Pull-Up", opis: "Maszyna z przeciwwagą lub guma. Zwis z aktywnymi barkami, nie biernie. Ciągnij łokciami w dół, klatka do drążka. Opuszczaj wolno do pełnego wyprostu.", opisPartie: "Najszerszy grzbietu, obły większy, biceps, mięśnie międzyłopatkowe.", serie: 3, zakres: "6–10", jedn: "kg", przerwa: 150, przerwaPo: 180, uwaga: "Ustaw asystę tak, by ostatnie powtórzenie było trudne, ale czyste.", },
+  { id: "p4", grupa: "plecy-szerokosc", nazwa: "Wiosłowanie hantlem z podparciem", en: "One-Arm Dumbbell Row", opis: "Kolano i dłoń na ławce, plecy równolegle do podłogi i płaskie. Hantel ciągniesz do biodra, nie do barku. Najpierw łopatka, potem łokieć.", opisPartie: "Najszerszy grzbietu, obły większy, biceps, międzyłopatkowe.", serie: 4, zakres: "10", jedn: "kg", przerwa: 120, przerwaPo: 180, jednostronne: true, uwaga: "Bez skrętu tułowia — to wersja bezpieczna dla lędźwi tylko przy nieruchomym tułowiu.", },
+  { id: "p5", grupa: "plecy-szerokosc", nazwa: "Przenoszenie ramion na wyciągu", en: "Straight-Arm Pulldown", opis: "Stań krok od wyciągu górnego, tułów lekko pochylony, plecy płaskie. Ramiona prawie proste, prowadź drążek łukiem do ud. W końcówce spięcie.", opisPartie: "Najszerszy grzbietu w izolacji, bez udziału bicepsa.", serie: 3, zakres: "12–15", jedn: "kg", przerwa: 75, przerwaPo: 120, },
+  { id: "p6", grupa: "plecy-grubosc", nazwa: "Wiosłowanie z podparciem klatki", en: "Chest-Supported Row", opis: "Klatka oparta o poduszkę, dzięki czemu kręgosłup nie przenosi obciążenia. Najpierw ściągnij łopatki, potem zginaj łokcie. Ciągnij do dolnych żeber.", opisPartie: "Środkowe plecy, czworoboczny, romboidalne, tylny bark, biceps.", serie: 4, zakres: "10", jedn: "kg", przerwa: 120, przerwaPo: 150, uwaga: "Nie odrywaj klatki od oparcia, żeby dołożyć ciężar.", },
+  { id: "p7", grupa: "plecy-grubosc", nazwa: "Wiosłowanie siedząc na wyciągu", en: "Seated Cable Row", opis: "Kolana lekko ugięte, plecy proste i nieruchome. Ciągnij uchwyt do brzucha, łokcie przy tułowiu. Tułów nie buja się w przód i w tył.", opisPartie: "Środkowe plecy, czworoboczny, romboidalne, biceps.", serie: 3, zakres: "10–12", jedn: "kg", przerwa: 120, przerwaPo: 150, uwaga: "Nie odchylaj się do tyłu przy końcówce serii — to obciąża lędźwie.", },
+  { id: "p8", grupa: "plecy-grubosc", nazwa: "Wiosłowanie na maszynie", en: "Machine Row", opis: "Klatka o poduszkę, uchwyty na wysokości dolnych żeber. Zaczynasz od łopatek. Krótka pauza w zwarciu, powrót kontrolowany.", opisPartie: "Środkowe plecy, czworoboczny, tylny bark.", serie: 3, zakres: "10–12", jedn: "kg", przerwa: 120, przerwaPo: 150, },
+  { id: "p9", grupa: "plecy-grubosc", nazwa: "Szrugsy z hantlami", en: "Dumbbell Shrug", opis: "Ruch wyłącznie w górę, w stronę uszu. Żadnego krążenia barkami. Na szczycie pauza 1 s z lekkim ściągnięciem łopatek. Opuszczaj wolniej niż podnosisz.", opisPartie: "Czworoboczny górny, dźwigacz łopatki.", serie: 3, zakres: "12", jedn: "kg", przerwa: 90, przerwaPo: 120, uwaga: "Ramiona pozostają wyprostowane — to nie jest podciąganie.", },
+  { id: "p10", grupa: "plecy-grubosc", nazwa: "Szrugsy na wyciągu dolnym", en: "Cable Shrug", opis: "Uchwyt na wyciągu dolnym lub drążek. Napięcie stałe w całym zakresie, inaczej niż przy hantlach. Ruch pionowy, pauza na górze.", opisPartie: "Czworoboczny górny, dźwigacz łopatki.", serie: 3, zakres: "12–15", jedn: "kg", przerwa: 75, przerwaPo: 120, },
+  { id: "b1", grupa: "barki", nazwa: "Wyciskanie hantli nad głowę siedząc", en: "Seated Dumbbell Shoulder Press", opis: "Oparcie pionowe, hantle chwytem neutralnym (dłonie do siebie) są łagodniejsze dla barku. Wyciskaj po lekkim łuku, nie prostuj łokci do blokady.", opisPartie: "Bark przedni i boczny, triceps, czworoboczny.", serie: 3, zakres: "10", jedn: "kg", przerwa: 120, przerwaPo: 150, uwaga: "Przy dolegliwościach barku odstaw i wróć od połowy ciężaru.", },
+  { id: "b2", grupa: "barki", nazwa: "Wyciskanie na maszynie nad głowę", en: "Machine Shoulder Press", opis: "Siedzisko ustawione tak, by uchwyty były na wysokości barków. Tor ruchu narzucony przez maszynę zdejmuje pracę stabilizacyjną z podrażnionego barku.", opisPartie: "Bark przedni i boczny, triceps.", serie: 3, zakres: "10–12", jedn: "kg", przerwa: 120, przerwaPo: 150, uwaga: "Łagodniejsza wersja pchania pionowego niż wolne hantle.", },
+  { id: "b3", grupa: "barki", nazwa: "Unoszenie hantli bokiem", en: "Lateral Raise", opis: "Lekki ciężar. Unoś do wysokości barków, nie wyżej. Łokcie minimalnie ugięte, prowadzą ruch. Bez zarzucania tułowiem i bez rotacji nadgarstka w górze.", opisPartie: "Bark boczny — partia decydująca o szerokości sylwetki.", serie: 3, zakres: "12–15", jedn: "kg", przerwa: 60, przerwaPo: 90, uwaga: "Unoszenie powyżej linii barków zwęża przestrzeń podbarkową.", },
+  { id: "b4", grupa: "barki", nazwa: "Face pull", en: "Face Pull", opis: "Linka na wysokości twarzy. Ciągniesz do czoła, rozdzielając ręce, łokcie wysoko. Na końcu rotacja zewnętrzna — kciuki do tyłu. Ciężar lekki.", opisPartie: "Tylny bark, mięśnie międzyłopatkowe, rotatory zewnętrzne.", serie: 4, zakres: "15", jedn: "kg", przerwa: 60, przerwaPo: 120, uwaga: "Ćwiczenie zdrowia barku, nie siły. Warto trzymać w planie na stałe.", },
+  { id: "b5", grupa: "barki", nazwa: "Odwrotne rozpiętki na maszynie", en: "Reverse Pec Deck", opis: "Klatka o poduszkę, ramiona prawie proste. Rozsuwaj ręce na boki po łuku, prowadząc łokciami. Ściągnij łopatki na końcu ruchu.", opisPartie: "Tylny bark, romboidalne, czworoboczny środkowy.", serie: 3, zakres: "12–15", jedn: "kg", przerwa: 75, przerwaPo: 120, },
+  { id: "t1", grupa: "triceps", nazwa: "Prostowanie ramion na wyciągu drążkiem", en: "Cable Triceps Pushdown", opis: "Łokcie przyklejone do tułowia i nieruchome — to jedyny warunek, który się liczy. Prostuj do pełnego wyprostu, krótkie spięcie na dole.", opisPartie: "Triceps, wszystkie trzy głowy.", serie: 3, zakres: "12", jedn: "kg", przerwa: 75, przerwaPo: 120, },
+  { id: "t2", grupa: "triceps", nazwa: "Prostowanie ramion z liną", en: "Rope Pushdown", opis: "Jak wersja z drążkiem, ale na dole rozsuwasz końce liny. Większy zakres i mocniejsze spięcie głowy bocznej.", opisPartie: "Triceps, szczególnie głowa boczna.", serie: 3, zakres: "12–15", jedn: "kg", przerwa: 75, przerwaPo: 120, },
+  { id: "t3", grupa: "triceps", nazwa: "Wyciskanie francuskie", en: "Skull Crusher", opis: "Leżąc, sztanga łamana. Ramiona skierowane lekko do tyłu, nie pionowo — utrzymuje napięcie. Zginasz tylko łokcie, ruch wolny, bez odbijania.", opisPartie: "Triceps, przede wszystkim głowa długa.", serie: 3, zakres: "12", jedn: "kg", przerwa: 75, przerwaPo: 120, uwaga: "Przy dyskomforcie w łokciach zmniejsz ciężar i skróć zakres.", },
+  { id: "t4", grupa: "triceps", nazwa: "Wyprost ramion nad głową z liną", en: "Overhead Cable Extension", opis: "Tyłem do wyciągu, lina zza głowy. Łokcie wysoko i nieruchomo. Prostuj ramiona nad głowę. Najlepsze rozciągnięcie głowy długiej.", opisPartie: "Triceps, głowa długa w największym rozciągnięciu.", serie: 3, zakres: "12–15", jedn: "kg", przerwa: 75, przerwaPo: 120, uwaga: "Tułów pochylony, ale plecy proste — nie wyginaj lędźwi.", },
+  { id: "t5", grupa: "triceps", nazwa: "Pompki na poręczach z asystą", en: "Assisted Dip", opis: "Tułów pionowo, gdy celujesz w triceps (pochylony bardziej angażuje klatkę). Schodź do kąta prostego w łokciach, nie głębiej.", opisPartie: "Triceps, dolna klatka, przedni bark.", serie: 3, zakres: "8–12", jedn: "kg", przerwa: 120, przerwaPo: 150, uwaga: "Zbyt głębokie zejście mocno obciąża przód barku.", },
+  { id: "c1", grupa: "biceps", nazwa: "Uginanie ze sztangą łamaną", en: "EZ-Bar Curl", opis: "Sztanga łamana odciąża nadgarstki. Łokcie przy tułowiu, nie wysuwaj ich do przodu. Podnoś bez zarzucania biodrami, opuszczaj wolno.", opisPartie: "Biceps, mięsień ramienny, ramienno-promieniowy.", serie: 3, zakres: "10–12", jedn: "kg", przerwa: 75, przerwaPo: 120, uwaga: "Jeśli musisz bujać tułowiem, ciężar jest za duży — to obciąża lędźwie.", },
+  { id: "c2", grupa: "biceps", nazwa: "Uginanie hantlami stojąc", en: "Standing Dumbbell Curl", opis: "Supinacja w trakcie ruchu — startujesz chwytem neutralnym, kończysz dłońmi do góry. Łokcie nieruchome przy tułowiu.", opisPartie: "Biceps, obie głowy.", serie: 3, zakres: "10–12", jedn: "kg", przerwa: 75, przerwaPo: 120, },
+  { id: "c3", grupa: "biceps", nazwa: "Uginanie młotkowe", en: "Hammer Curl", opis: "Chwyt neutralny przez cały ruch, dłonie zwrócone do siebie. Łokcie przy tułowiu. Można naprzemiennie lub oburącz.", opisPartie: "Mięsień ramienny i ramienno-promieniowy — grubość ramienia.", serie: 3, zakres: "10–12", jedn: "kg", przerwa: 75, przerwaPo: 120, },
+  { id: "c4", grupa: "biceps", nazwa: "Uginanie na modlitewniku", en: "Preacher Curl", opis: "Ramiona całą długością na poduszce, pachy dosunięte. Nie prostuj łokci gwałtownie w dole. Ruch wolny w obie strony.", opisPartie: "Biceps, szczególnie głowa krótka. Pełna izolacja bez oszukiwania.", serie: 3, zakres: "10–12", jedn: "kg", przerwa: 75, przerwaPo: 120, },
+  { id: "c5", grupa: "biceps", nazwa: "Uginanie nadgarstków", en: "Wrist Curl", opis: "Przedramiona oparte o uda lub ławkę, nadgarstki poza krawędzią. Mały zakres, wolne tempo, lekki ciężar.", opisPartie: "Zginacze przedramienia — poprawia siłę chwytu.", serie: 3, zakres: "15", jedn: "kg", przerwa: 60, przerwaPo: 90, uwaga: "Przydatne, jeśli chwyt puszcza wcześniej niż plecy przy wiosłowaniu.", },
+  { id: "n1", grupa: "nogi", nazwa: "Wypychanie na suwnicy", en: "Leg Press", opis: "Stopy na szerokość bioder, kolana podążają za palcami. Schodź do kąta, w którym miednica nie zaczyna się podwijać — to granica bezpieczna dla lędźwi.", opisPartie: "Czworogłowe uda, pośladki, przywodziciele.", serie: 3, zakres: "10", jedn: "kg", przerwa: 120, przerwaPo: 180, uwaga: "Nie prostuj kolan do pełnej blokady. Podwinięcie miednicy = za głęboko.", },
+  { id: "n2", grupa: "nogi", nazwa: "Przysiad bułgarski", en: "Bulgarian Split Squat", opis: "Tylna noga na ławce, ciężar na pięcie przedniej nogi, tułów lekko pochylony. Kolano przedniej nogi nad stopą. Hantle po bokach.", opisPartie: "Czworogłowe, pośladki, stabilizatory biodra.", serie: 3, zakres: "10", jedn: "kg", przerwa: 120, przerwaPo: 180, jednostronne: true, },
+  { id: "n3", grupa: "nogi", nazwa: "Prostowanie nóg na maszynie", en: "Leg Extension", opis: "Oś obrotu maszyny na wysokości kolana. Prostuj do pełnego wyprostu, sekunda spięcia, powrót wolny. Ciężar umiarkowany.", opisPartie: "Czworogłowe uda w izolacji, w tym mięsień prosty uda.", serie: 3, zakres: "12–15", jedn: "kg", przerwa: 75, przerwaPo: 120, uwaga: "Przy chrzęszczeniu kolan zacznij od małych ciężarów i pełnego, wolnego zakresu.", },
+  { id: "n4", grupa: "nogi", nazwa: "Uginanie nóg leżąc", en: "Lying Leg Curl", opis: "Biodra dociśnięte do poduszki. Uginaj do pełnego zgięcia, opuszczaj wolno. Nie odrywaj bioder, żeby dołożyć ciężar.", opisPartie: "Dwugłowe uda, półścięgnisty, półbłoniasty.", serie: 3, zakres: "12", jedn: "kg", przerwa: 75, przerwaPo: 120, uwaga: "Ważna przeciwwaga dla suwnicy — chroni kolano.", },
+  { id: "n5", grupa: "nogi", nazwa: "Wypychanie bioder", en: "Hip Thrust", opis: "Łopatki oparte o ławkę, sztanga na biodrach z podkładką. Wypychaj biodra przez pięty do linii tułowia. Na szczycie mocne spięcie pośladków.", opisPartie: "Pośladek wielki, dwugłowe uda.", serie: 3, zakres: "10–12", jedn: "kg", przerwa: 120, przerwaPo: 150, uwaga: "Podbródek do klatki, nie wyginaj lędźwi w górze — kończ ruch pośladkami, nie plecami.", },
+  { id: "g1", grupa: "gorset", nazwa: "Pallof press", en: "Pallof Press", opis: "Bokiem do wyciągu, uchwyt przy mostku oburącz. Wypychasz ręce przed siebie i wracasz. Zadaniem jest nie dać się obrócić.", opisPartie: "Skośne brzucha, poprzeczny — praca antyrotacyjna, kluczowa dla ochrony lędźwi.", serie: 3, zakres: "10", jedn: "kg", przerwa: 60, przerwaPo: 90, jednostronne: true, },
+  { id: "g2", grupa: "gorset", nazwa: "Plank boczny", en: "Side Plank", opis: "Podpór na przedramieniu, łokieć pod barkiem. Ciało w jednej linii, biodra wypchnięte w górę. Oddychaj spokojnie.", opisPartie: "Skośne brzucha, czworoboczny lędźwi, pośladek średni.", serie: 3, zakres: "30 s", jedn: "s", przerwa: 45, przerwaPo: 0, jednostronne: true, bezPowtorzen: true, },
+  { id: "g3", grupa: "gorset", nazwa: "Martwy robak", en: "Dead Bug", opis: "Leżąc, lędźwie dociśnięte do podłogi przez cały czas. Opuszczasz przeciwną rękę i nogę, nie tracąc kontaktu pleców z podłożem.", opisPartie: "Poprzeczny brzucha, prosty, stabilizacja lędźwi.", serie: 3, zakres: "8–10", jedn: "powt.", przerwa: 45, przerwaPo: 60, jednostronne: true, bezPowtorzen: true, uwaga: "Gdy lędźwie odrywają się od podłogi, skróć zakres.", },
+  { id: "g4", grupa: "gorset", nazwa: "Unoszenie nóg w zwisie", en: "Hanging Knee Raise", opis: "Zwis z aktywnymi barkami. Podciągasz ugięte kolana, podwijając miednicę — sam ruch nóg to za mało. Opuszczaj wolno.", opisPartie: "Dolna część prostego brzucha, biodrowo-lędźwiowy.", serie: 3, zakres: "15", jedn: "powt.", przerwa: 60, przerwaPo: 90, bezPowtorzen: true, uwaga: "Gdy zaczynasz się rozkołysać, przerwij serię.", },
+  { id: "g5", grupa: "gorset", nazwa: "Spięcia brzucha na ławce skośnej", en: "Decline Crunch", opis: "Nogi zaczepione i podkurczone. Zwijasz kręgosłup odcinek po odcinku, nie unosisz tułowia sztywno. Ręce nie ciągną za głowę.", opisPartie: "Prosty brzucha, głównie część górna.", serie: 3, zakres: "15", jedn: "powt.", przerwa: 45, przerwaPo: 0, bezPowtorzen: true, uwaga: "Niewielki skos i wolne tempo — przy historii dyskopatii unikaj wersji z dużym kątem i szarpaniem.", },
+];
+
+const BAZA_MAPA = Object.fromEntries(BAZA.map((c) => [c.id, c]));
+
+
+const KLUCZ_DODANE = "dziennik:dodane";
+const KLUCZ_KOLEJNOSC = "dziennik:kolejnosc";
+
 const PLANY = {
   A: {
     nazwa: "Trening A",
@@ -136,7 +202,7 @@ const KLUCZ_GH = "dziennik:github";
 const KLUCZ_MOTYW = "dziennik:motyw";
 const KLUCZ_PLAN = "dziennik:plan";
 
-const WERSJA = "2.2";
+const WERSJA = "2.4";
 const DATA_WERSJI = "2026-08-30";
 
 /* ---------------------------------------------------------------
@@ -419,6 +485,8 @@ function DziennikTreningowy() {
   const [konfigGH, setKonfigGH] = useState(null);
   const [motyw, setMotyw] = useState("multicam");
   const [nadpisania, setNadpisania] = useState({});
+  const [dodane, setDodane] = useState({ A: [], B: [] });
+  const [kolejnosc, setKolejnosc] = useState({ A: [], B: [] });
   const [stanGH, setStanGH] = useState({ etap: "bezczynny", tekst: "" });
   const [widok, setWidok] = useState("start");
   const [aktywna, setAktywna] = useState(null);
@@ -444,6 +512,18 @@ function DziennikTreningowy() {
         if (g) setKonfigGH(JSON.parse(g));
       } catch (e) {
         // brak konfiguracji synchronizacji
+      }
+      try {
+        const k = await magazyn.czytaj(KLUCZ_KOLEJNOSC);
+        if (k) setKolejnosc({ A: [], B: [], ...JSON.parse(k) });
+      } catch (e) {
+        // brak zapisanej kolejności
+      }
+      try {
+        const d = await magazyn.czytaj(KLUCZ_DODANE);
+        if (d) setDodane({ A: [], B: [], ...JSON.parse(d) });
+      } catch (e) {
+        // brak dodanych ćwiczeń
       }
       try {
         const n = await magazyn.czytaj(KLUCZ_PLAN);
@@ -480,7 +560,7 @@ function DziennikTreningowy() {
     setSesje(noweSesje);
     const ok = await magazyn.pisz(KLUCZ, JSON.stringify(noweSesje));
     setAwaria(ok ? null : { szczegol: magazyn.szczegol });
-    wyslijDoGH(noweSesje, wskazowki, nadpisania);
+    wyslijDoGH(noweSesje, wskazowki, nadpisania, dodane, kolejnosc);
     return ok;
   };
 
@@ -488,14 +568,36 @@ function DziennikTreningowy() {
     const nowe = { ...wskazowki, [plan]: tekst };
     setWskazowki(nowe);
     await magazyn.pisz(KLUCZ_WSK, JSON.stringify(nowe));
-    wyslijDoGH(sesje, nowe, nadpisania);
+    wyslijDoGH(sesje, nowe, nadpisania, dodane, kolejnosc);
   };
 
   const zapiszNadpisanie = async (cwId, pola) => {
     const nowe = { ...nadpisania, [cwId]: { ...(nadpisania[cwId] || {}), ...pola } };
     setNadpisania(nowe);
     await magazyn.pisz(KLUCZ_PLAN, JSON.stringify(nowe));
-    wyslijDoGH(sesje, wskazowki, nowe);
+    wyslijDoGH(sesje, wskazowki, nowe, dodane, kolejnosc);
+  };
+
+  const zapiszKolejnosc = async (plan, idki) => {
+    const nowe = { ...kolejnosc, [plan]: idki };
+    setKolejnosc(nowe);
+    await magazyn.pisz(KLUCZ_KOLEJNOSC, JSON.stringify(nowe));
+    wyslijDoGH(sesje, wskazowki, nadpisania, dodane, nowe);
+  };
+
+  const zapiszDodane = async (nowe) => {
+    setDodane(nowe);
+    await magazyn.pisz(KLUCZ_DODANE, JSON.stringify(nowe));
+    wyslijDoGH(sesje, wskazowki, nadpisania, nowe, kolejnosc);
+  };
+
+  const dodajCwiczenie = (plan, cwId) => {
+    if ((dodane[plan] || []).includes(cwId)) return;
+    zapiszDodane({ ...dodane, [plan]: [...(dodane[plan] || []), cwId] });
+  };
+
+  const usunCwiczenie = (plan, cwId) => {
+    zapiszDodane({ ...dodane, [plan]: (dodane[plan] || []).filter((x) => x !== cwId) });
   };
 
   const zapiszKonfigGH = async (k) => {
@@ -505,7 +607,7 @@ function DziennikTreningowy() {
 
   const gotowyGH = (k) => k && k.token && k.wlasciciel && k.repo && k.sciezka;
 
-  const wyslijDoGH = async (noweSesje, noweWskazowki, noweNadpisania) => {
+  const wyslijDoGH = async (noweSesje, noweWskazowki, noweNadpisania, noweDodane, nowaKolejnosc) => {
     const k = konfigGH;
     if (!gotowyGH(k)) return;
     setStanGH({ etap: "praca", tekst: "wysyłam…" });
@@ -513,7 +615,7 @@ function DziennikTreningowy() {
       const obecne = await github.pobierz(k);
       await github.wyslij(
         k,
-        { wersja: WERSJA, zapisano: new Date().toISOString(), sesje: noweSesje, wskazowki: noweWskazowki, plan: noweNadpisania || nadpisania },
+        { wersja: WERSJA, zapisano: new Date().toISOString(), sesje: noweSesje, wskazowki: noweWskazowki, plan: noweNadpisania || nadpisania, dodane: noweDodane || dodane, kolejnosc: nowaKolejnosc || kolejnosc },
         obecne.istnieje ? obecne.sha : null
       );
       setStanGH({ etap: "ok", tekst: `wysłano ${new Date().toTimeString().slice(0, 5)}` });
@@ -536,6 +638,16 @@ function DziennikTreningowy() {
       if (Array.isArray(dane.sesje)) {
         setSesje(dane.sesje);
         await magazyn.pisz(KLUCZ, JSON.stringify(dane.sesje));
+      }
+      if (dane.kolejnosc) {
+        const k = { A: [], B: [], ...dane.kolejnosc };
+        setKolejnosc(k);
+        await magazyn.pisz(KLUCZ_KOLEJNOSC, JSON.stringify(k));
+      }
+      if (dane.dodane) {
+        const d = { A: [], B: [], ...dane.dodane };
+        setDodane(d);
+        await magazyn.pisz(KLUCZ_DODANE, JSON.stringify(d));
       }
       if (dane.plan) {
         setNadpisania(dane.plan);
@@ -626,6 +738,11 @@ function DziennikTreningowy() {
             wskazowka={wskazowki[aktywna.plan] || ""}
             nadpisania={nadpisania}
             zapiszNadpisanie={zapiszNadpisanie}
+            dodane={dodane[aktywna.plan] || []}
+            kolejnosc={kolejnosc[aktywna.plan] || []}
+            zapiszKolejnosc={zapiszKolejnosc}
+            dodajCwiczenie={dodajCwiczenie}
+            usunCwiczenie={usunCwiczenie}
             zapiszWskazowki={zapiszWskazowki}
             ostatnieDlaCwiczenia={ostatnieDlaCwiczenia}
             zapiszSesje={zapiszSesje}
@@ -641,7 +758,7 @@ function DziennikTreningowy() {
           <Chmura
             konfig={konfigGH}
             zapiszKonfig={zapiszKonfigGH}
-            wyslij={() => wyslijDoGH(sesje, wskazowki, nadpisania)}
+            wyslij={() => wyslijDoGH(sesje, wskazowki, nadpisania, dodane, kolejnosc)}
             pobierz={pobierzZGH}
             stan={stanGH}
             sesje={sesje}
@@ -869,8 +986,28 @@ function Stoper({ przerwa, przerwaPo }) {
 /* ---------------------------------------------------------------
    SESJA TRENINGOWA
    --------------------------------------------------------------- */
-function Sesja({ sesja, setSesja, wskazowka, zapiszWskazowki, nadpisania, zapiszNadpisanie, ostatnieDlaCwiczenia, zapiszSesje, anuluj }) {
+function Sesja({ sesja, setSesja, wskazowka, zapiszWskazowki, nadpisania, zapiszNadpisanie, dodane, dodajCwiczenie, usunCwiczenie, kolejnosc, zapiszKolejnosc, ostatnieDlaCwiczenia, zapiszSesje, anuluj }) {
   const plan = PLANY[sesja.plan];
+  const [pokazWybierak, setPokazWybierak] = useState(false);
+  const bazowe = [
+    ...plan.cwiczenia,
+    ...dodane.map((id) => BAZA_MAPA[id]).filter(Boolean),
+  ];
+  const cwiczeniaSesji = (() => {
+    if (!kolejnosc.length) return bazowe;
+    const mapa = Object.fromEntries(bazowe.map((c) => [c.id, c]));
+    const ulozone = kolejnosc.map((id) => mapa[id]).filter(Boolean);
+    const brakujace = bazowe.filter((c) => !kolejnosc.includes(c.id));
+    return [...ulozone, ...brakujace];
+  })();
+
+  const przesun = (i, kierunek) => {
+    const j = i + kierunek;
+    if (j < 0 || j >= cwiczeniaSesji.length) return;
+    const idki = cwiczeniaSesji.map((c) => c.id);
+    [idki[i], idki[j]] = [idki[j], idki[i]];
+    zapiszKolejnosc(sesja.plan, idki);
+  };
   const [pokazPodsumowanie, setPokazPodsumowanie] = useState(false);
 
   const wpisCwiczenia = (cwId) => {
@@ -916,7 +1053,7 @@ function Sesja({ sesja, setSesja, wskazowka, zapiszWskazowki, nadpisania, zapisz
 
   const tekstPodsumowania = () => {
     const linie = [`${plan.nazwa} — ${formatData(sesja.data)}`, ""];
-    plan.cwiczenia.forEach((cw) => {
+    cwiczeniaSesji.forEach((cw) => {
       const wpis = wpisCwiczenia(cw.id);
       const serie = wpis.serie.filter(wypelniona);
       if (!serie.length) return;
@@ -940,13 +1077,17 @@ function Sesja({ sesja, setSesja, wskazowka, zapiszWskazowki, nadpisania, zapisz
 
       <Rozgrzewka zaznaczone={sesja.rozgrzewka || []} przelacz={przelaczRozgrzewke} />
 
-      {plan.cwiczenia.map((cw, i) => (
+      {cwiczeniaSesji.map((cw, i) => (
         <Cwiczenie
           key={cw.id}
           numer={i + 1}
           cw={cw}
           nadpisanie={nadpisania[cw.id]}
           zapiszNadpisanie={zapiszNadpisanie}
+          dodatkowe={dodane.includes(cw.id)}
+          wGore={i > 0 ? () => przesun(i, -1) : null}
+          wDol={i < cwiczeniaSesji.length - 1 ? () => przesun(i, 1) : null}
+          usunZPlanu={() => usunCwiczenie(sesja.plan, cw.id)}
           wpis={wpisCwiczenia(cw.id)}
           ustawSerie={ustawSerie}
           przelaczStrony={przelaczStrony}
@@ -955,6 +1096,28 @@ function Sesja({ sesja, setSesja, wskazowka, zapiszWskazowki, nadpisania, zapisz
           ostatnie={ostatnieDlaCwiczenia(cw.id, sesja.id)}
         />
       ))}
+
+      <button
+        onClick={() => setPokazWybierak(true)}
+        className="dt-focus"
+        style={{
+          ...mono, display: "flex", alignItems: "center", justifyContent: "center", gap: 9,
+          background: C.pole, border: `1px solid ${C.signal}`, color: C.signal,
+          fontSize: 12.5, fontWeight: 700, letterSpacing: "0.09em",
+          padding: "15px 0", width: "100%", cursor: "pointer", marginBottom: 22,
+        }}
+      >
+        <span style={{ fontSize: 17, lineHeight: 1, fontWeight: 400 }}>+</span> DODAJ ĆWICZENIE
+      </button>
+
+      {pokazWybierak && (
+        <Wybierak
+          juzWPlanie={[...plan.cwiczenia.map((c) => c.id), ...dodane]}
+          nazwyWPlanie={plan.cwiczenia.map((c) => c.nazwa)}
+          wybierz={(id) => { dodajCwiczenie(sesja.plan, id); setPokazWybierak(false); }}
+          zamknij={() => setPokazWybierak(false)}
+        />
+      )}
 
       <div style={{ marginTop: 22 }}>
         <label style={{ ...mono, fontSize: 11, letterSpacing: "0.1em", color: C.steel, display: "block", marginBottom: 6 }}>NOTATKA</label>
@@ -1158,7 +1321,7 @@ function Rozgrzewka({ zaznaczone, przelacz }) {
 /* ---------------------------------------------------------------
    POJEDYNCZE ĆWICZENIE
    --------------------------------------------------------------- */
-function Cwiczenie({ numer, cw, nadpisanie, zapiszNadpisanie, wpis, ustawSerie, przelaczStrony, dodajSerie, usunSerie, ostatnie }) {
+function Cwiczenie({ numer, cw, nadpisanie, zapiszNadpisanie, dodatkowe, usunZPlanu, wGore, wDol, wpis, ustawSerie, przelaczStrony, dodajSerie, usunSerie, ostatnie }) {
   const serie = wpis.serie || [];
   const [edycjaCelu, setEdycjaCelu] = useState(false);
   const [pokazOpis, setPokazOpis] = useState(false);
@@ -1187,7 +1350,35 @@ function Cwiczenie({ numer, cw, nadpisanie, zapiszNadpisanie, wpis, ustawSerie, 
   return (
     <div style={{ marginBottom: 18, background: C.card, border: `1px solid ${C.line}`, padding: "13px 14px 12px" }}>
       <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-        <span style={{ ...mono, fontSize: 12, color: C.steel, fontWeight: 600, paddingTop: 3, minWidth: 16 }}>{numer}</span>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, minWidth: 26 }}>
+          <button
+            onClick={wGore || undefined}
+            disabled={!wGore}
+            className="dt-focus"
+            aria-label="Przenieś wyżej"
+            style={{
+              ...mono, width: 26, height: 22, padding: 0, cursor: wGore ? "pointer" : "default",
+              background: "none", border: `1px solid ${wGore ? C.line : "transparent"}`,
+              color: wGore ? C.steel : "transparent", fontSize: 11, lineHeight: 1,
+            }}
+          >
+            ▲
+          </button>
+          <span style={{ ...mono, fontSize: 12, color: C.steel, fontWeight: 600 }}>{numer}</span>
+          <button
+            onClick={wDol || undefined}
+            disabled={!wDol}
+            className="dt-focus"
+            aria-label="Przenieś niżej"
+            style={{
+              ...mono, width: 26, height: 22, padding: 0, cursor: wDol ? "pointer" : "default",
+              background: "none", border: `1px solid ${wDol ? C.line : "transparent"}`,
+              color: wDol ? C.steel : "transparent", fontSize: 11, lineHeight: 1,
+            }}
+          >
+            ▼
+          </button>
+        </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -1219,6 +1410,21 @@ function Cwiczenie({ numer, cw, nadpisanie, zapiszNadpisanie, wpis, ustawSerie, 
               <div style={{ fontSize: 13, lineHeight: 1.55, color: C.ink }}>{cw.opis}</div>
               <div style={{ ...mono, fontSize: 10, color: C.signal, letterSpacing: "0.08em", margin: "11px 0 5px" }}>PARTIE</div>
               <div style={{ fontSize: 13, lineHeight: 1.55, color: C.inkSoft }}>{cw.opisPartie || cw.partie}</div>
+              {cw.uwaga && (
+                <>
+                  <div style={{ ...mono, fontSize: 10, color: C.hot, letterSpacing: "0.08em", margin: "11px 0 5px" }}>UWAGA</div>
+                  <div style={{ fontSize: 13, lineHeight: 1.55, color: C.ink }}>{cw.uwaga}</div>
+                </>
+              )}
+              {dodatkowe && (
+                <button
+                  onClick={usunZPlanu}
+                  className="dt-focus"
+                  style={{ ...mono, width: "100%", marginTop: 13, background: "none", border: `1px solid ${C.line}`, color: C.steel, fontSize: 11, padding: "10px 0", cursor: "pointer", letterSpacing: "0.06em" }}
+                >
+                  USUŃ Z PLANU
+                </button>
+              )}
             </div>
           )}
 
@@ -1814,6 +2020,130 @@ function Historia({ sesje, usunSesje, setWidok }) {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+function Wybierak({ juzWPlanie, nazwyWPlanie, wybierz, zamknij }) {
+  const [szukaj, setSzukaj] = useState("");
+  const [rozwiniete, setRozwiniete] = useState(null);
+
+  const norm = (t) =>
+    (t || "")
+      .toLowerCase()
+      .replace(/ą/g, "a").replace(/ć/g, "c").replace(/ę/g, "e").replace(/ł/g, "l")
+      .replace(/ń/g, "n").replace(/ó/g, "o").replace(/ś/g, "s").replace(/ż|ź/g, "z");
+
+  const q = norm(szukaj.trim());
+  const pasuje = (c) => !q || norm(c.nazwa).includes(q) || norm(c.en).includes(q);
+  const wyniki = BAZA.filter(pasuje);
+
+  return (
+    <div
+      onClick={zamknij}
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.72)", zIndex: 90, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{ background: C.paper, borderTop: `2px solid ${C.signal}`, width: "100%", maxWidth: 560, maxHeight: "88vh", display: "flex", flexDirection: "column" }}
+      >
+        <div style={{ padding: "14px 15px 12px", borderBottom: `1px solid ${C.line}` }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 11 }}>
+            <span style={{ ...mono, fontSize: 11, letterSpacing: "0.12em", color: C.signal, fontWeight: 700 }}>
+              BAZA ĆWICZEŃ · {BAZA.length}
+            </span>
+            <button
+              onClick={zamknij}
+              className="dt-focus"
+              style={{ ...mono, background: "none", border: `1px solid ${C.line}`, color: C.inkSoft, fontSize: 11, padding: "7px 13px", cursor: "pointer", fontWeight: 700 }}
+            >
+              ZAMKNIJ
+            </button>
+          </div>
+          <input
+            value={szukaj}
+            onChange={(e) => setSzukaj(e.target.value)}
+            placeholder="Szukaj — po polsku lub po angielsku"
+            className="dt-focus"
+            style={{ ...body, width: "100%", background: C.pole, border: `1px solid ${C.line}`, padding: "12px 11px", fontSize: 14.5, color: C.ink }}
+          />
+        </div>
+
+        <div style={{ overflowY: "auto", padding: "4px 15px 20px", WebkitOverflowScrolling: "touch" }}>
+          {wyniki.length === 0 && (
+            <div style={{ ...mono, fontSize: 12, color: C.steel, padding: "26px 0", textAlign: "center" }}>
+              NIC NIE ZNALEZIONO
+            </div>
+          )}
+
+          {GRUPY.map((g) => {
+            const wGrupie = wyniki.filter((c) => c.grupa === g.id);
+            if (!wGrupie.length) return null;
+            return (
+              <div key={g.id} style={{ marginTop: 16 }}>
+                <div style={{ ...mono, fontSize: 10, letterSpacing: "0.12em", color: C.signal, marginBottom: 8, fontWeight: 700 }}>
+                  {g.nazwa.toUpperCase()}
+                </div>
+                {wGrupie.map((c) => {
+                  const jest = juzWPlanie.includes(c.id) || nazwyWPlanie.includes(c.nazwa);
+                  const otwarte = rozwiniete === c.id;
+                  return (
+                    <div key={c.id} style={{ background: C.card, border: `1px solid ${C.line}`, marginBottom: 8, padding: "11px 12px" }}>
+                      <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ ...display, fontSize: 16, fontWeight: 600, lineHeight: 1.2, color: jest ? C.steel : C.ink }}>
+                            {c.nazwa}
+                          </div>
+                          <div style={{ ...mono, fontSize: 10.5, color: C.steel, marginTop: 2 }}>({c.en})</div>
+                        </div>
+                        <button
+                          onClick={() => setRozwiniete(otwarte ? null : c.id)}
+                          className="dt-focus"
+                          style={{ ...mono, background: otwarte ? C.signal : "none", border: `1px solid ${otwarte ? C.signal : C.line}`, color: otwarte ? C.paper : C.steel, width: 30, height: 30, flexShrink: 0, cursor: "pointer", fontSize: 14, fontWeight: 700, padding: 0 }}
+                        >
+                          ?
+                        </button>
+                        <button
+                          onClick={() => !jest && wybierz(c.id)}
+                          disabled={jest}
+                          className="dt-focus"
+                          style={{
+                            ...mono, width: 74, height: 30, flexShrink: 0, fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", padding: 0,
+                            cursor: jest ? "default" : "pointer",
+                            background: jest ? "none" : C.pole,
+                            border: `1px solid ${jest ? C.line : C.signal}`,
+                            color: jest ? C.steel : C.signal,
+                          }}
+                        >
+                          {jest ? "W PLANIE" : "+ DODAJ"}
+                        </button>
+                      </div>
+
+                      {otwarte && (
+                        <div style={{ marginTop: 10, borderTop: `1px solid ${C.line}`, paddingTop: 10 }}>
+                          <div style={{ ...mono, fontSize: 9.5, color: C.signal, letterSpacing: "0.08em", marginBottom: 4 }}>TECHNIKA</div>
+                          <div style={{ fontSize: 12.5, lineHeight: 1.55, color: C.ink }}>{c.opis}</div>
+                          <div style={{ ...mono, fontSize: 9.5, color: C.signal, letterSpacing: "0.08em", margin: "9px 0 4px" }}>PARTIE</div>
+                          <div style={{ fontSize: 12.5, lineHeight: 1.55, color: C.inkSoft }}>{c.opisPartie}</div>
+                          {c.uwaga && (
+                            <>
+                              <div style={{ ...mono, fontSize: 9.5, color: C.hot, letterSpacing: "0.08em", margin: "9px 0 4px" }}>UWAGA</div>
+                              <div style={{ fontSize: 12.5, lineHeight: 1.55, color: C.ink }}>{c.uwaga}</div>
+                            </>
+                          )}
+                          <div style={{ ...mono, fontSize: 10.5, color: C.steel, marginTop: 9 }}>
+                            PROPOZYCJA: {c.serie} × {c.zakres} · PRZERWA {mmss(c.przerwa)}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
