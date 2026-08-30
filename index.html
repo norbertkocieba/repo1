@@ -102,30 +102,30 @@ const PLANY = {
     nazwa: "Trening A",
     akcent: "Klatka · plecy · kaptur · ramiona",
     cwiczenia: [
-      { id: "a1", nazwa: "Wyciskanie hantlami na skosie", detal: "15–30°", partie: "Górna klatka, przedni bark, triceps", serie: 4, zakres: "8–10", jedn: "kg", przerwa: 150, przerwaPo: 180 },
-      { id: "a2", nazwa: "Rozpiętki z wyciągu dolnego w górę", detal: "", partie: "Górna klatka (izolacja)", serie: 3, zakres: "12", jedn: "kg", przerwa: 90, przerwaPo: 150 },
-      { id: "a3", nazwa: "Wiosłowanie hantlem z podparciem", detal: "", partie: "Najszerszy grzbietu, obły większy, biceps", serie: 4, zakres: "10", jedn: "kg", przerwa: 120, przerwaPo: 180, jednostronne: true },
-      { id: "a4", nazwa: "Ściąganie drążka", detal: "", partie: "Najszerszy grzbietu, biceps", serie: 3, zakres: "10", jedn: "kg", przerwa: 120, przerwaPo: 150 },
-      { id: "a8", nazwa: "Szrugsy z hantlami", detal: "bez rotacji barków", partie: "Czworoboczny górny, dźwigacz łopatki", serie: 3, zakres: "12", jedn: "kg", przerwa: 90, przerwaPo: 120 },
-      { id: "a5", nazwa: "Triceps na wyciągu", detal: "", partie: "Triceps", serie: 3, zakres: "12", jedn: "kg", przerwa: 75, przerwaPo: 120 },
-      { id: "a9", nazwa: "Uginanie ze sztangą łamaną", detal: "", partie: "Biceps, ramienny", serie: 3, zakres: "10–12", jedn: "kg", przerwa: 75, przerwaPo: 120 },
-      { id: "a6", nazwa: "Pallof press", detal: "", partie: "Skośne brzucha, antyrotacja", serie: 3, zakres: "10", jedn: "kg", przerwa: 60, przerwaPo: 90, jednostronne: true },
-      { id: "a7", nazwa: "Plank boczny", detal: "", partie: "Skośne, czworoboczny lędźwi, pośladek średni", serie: 3, zakres: "30 s", jedn: "s", przerwa: 45, przerwaPo: 0, jednostronne: true, bezPowtorzen: true },
+      { id: "a1", nazwa: "Wyciskanie hantlami na skosie", detal: "15–30°", en: "Incline Dumbbell Press", opis: "Ławka 15–30°, wyżej przenosi pracę na barki. Łopatki ściągnięte i wciśnięte w ławkę przez całą serię. Hantle nad dolną częścią klatki, łokcie ok. 45° od tułowia, nie na boki. Opuszczaj do lekkiego rozciągnięcia, nie na siłę. Dół pleców przyklejony do ławki — jeśli się odrywa, ciężar jest za duży.", opisPartie: "Górna część klatki (obojczykowa), przedni bark, triceps.", partie: "Górna klatka, przedni bark, triceps", serie: 4, zakres: "8–10", jedn: "kg", przerwa: 150, przerwaPo: 180 },
+      { id: "a2", nazwa: "Rozpiętki z wyciągu dolnego w górę", detal: "", en: "Low-to-High Cable Fly", opis: "Uchwyty z najniższej pozycji, lekki wykrok dla stabilności. Łokcie minimalnie ugięte i taki kąt utrzymujesz — to ruch w stawie barkowym, nie łokciowym. Prowadź ręce po łuku w górę i do środka, jakbyś kogoś obejmował. Na końcu krótkie spięcie klatki. Ciężar mały, liczy się tor ruchu.", opisPartie: "Górna klatka w izolacji — bez udziału tricepsa.", partie: "Górna klatka (izolacja)", serie: 3, zakres: "12", jedn: "kg", przerwa: 90, przerwaPo: 150 },
+      { id: "a3", nazwa: "Wiosłowanie hantlem z podparciem", detal: "", en: "One-Arm Dumbbell Row", opis: "Kolano i dłoń na ławce, plecy równolegle do podłogi i płaskie. Hantel ciągniesz do biodra, nie do barku. Zaczynasz od ściągnięcia łopatki, dopiero potem zgina się łokieć. Bez skrętu tułowia i bez szarpania — tułów pozostaje nieruchomy.", opisPartie: "Najszerszy grzbietu, obły większy, biceps, mięśnie międzyłopatkowe.", partie: "Najszerszy grzbietu, obły większy, biceps", serie: 4, zakres: "10", jedn: "kg", przerwa: 120, przerwaPo: 180, jednostronne: true },
+      { id: "a4", nazwa: "Ściąganie drążka", detal: "", en: "Lat Pulldown", opis: "Uda zablokowane pod wałkiem. Chwyt nieco szerszy niż barki. Zanim pociągniesz, opuść barki w dół. Drążek do góry klatki, klatka wypchnięta do przodu. Odchylenie tułowia minimalne, do 15°. Górę kontroluj, nie pozwól rękom wystrzelić.", opisPartie: "Najszerszy grzbietu, obły większy, biceps.", partie: "Najszerszy grzbietu, biceps", serie: 3, zakres: "10", jedn: "kg", przerwa: 120, przerwaPo: 150 },
+      { id: "a8", nazwa: "Szrugsy z hantlami", detal: "bez rotacji barków", en: "Dumbbell Shrug", opis: "Ruch wyłącznie w górę, w stronę uszu. Żadnego krążenia barkami. Na szczycie pauza 1 sekunda z lekkim ściągnięciem łopatek. Opuszczaj wolniej niż podnosisz. Głowa nieruchoma, nie wysuwaj brody. Ramiona pozostają wyprostowane — to nie jest podciąganie.", opisPartie: "Czworoboczny górny, dźwigacz łopatki.", partie: "Czworoboczny górny, dźwigacz łopatki", serie: 3, zakres: "12", jedn: "kg", przerwa: 90, przerwaPo: 120 },
+      { id: "a5", nazwa: "Triceps na wyciągu", detal: "", en: "Cable Triceps Pushdown", opis: "Łokcie przyklejone do tułowia i nieruchome przez całą serię — to jedyny warunek, który się liczy. Prostuj przedramiona do pełnego wyprostu, na dole krótkie spięcie. Wracaj kontrolowanie do kąta prostego. Tułów lekko pochylony, bez bujania.", opisPartie: "Triceps, wszystkie trzy głowy.", partie: "Triceps", serie: 3, zakres: "12", jedn: "kg", przerwa: 75, przerwaPo: 120 },
+      { id: "a9", nazwa: "Uginanie ze sztangą łamaną", detal: "", en: "EZ-Bar Curl", opis: "Sztanga łamana odciąża nadgarstki. Łokcie przy tułowiu, nie wysuwaj ich do przodu. Podnoś bez zarzucania biodrami — jeśli musisz bujać, ciężar za duży. Opuszczaj wolno do pełnego wyprostu.", opisPartie: "Biceps, mięsień ramienny, ramienno-promieniowy.", partie: "Biceps, ramienny", serie: 3, zakres: "10–12", jedn: "kg", przerwa: 75, przerwaPo: 120 },
+      { id: "a6", nazwa: "Pallof press", detal: "", en: "Pallof Press", opis: "Stań bokiem do wyciągu, uchwyt trzymaj przy mostku oburącz. Wypychasz ręce prosto przed siebie i wracasz. Zadaniem jest nie dać się obrócić — tułów musi zostać nieruchomy. Pośladki i brzuch napięte, żebra ściągnięte w dół.", opisPartie: "Skośne brzucha, poprzeczny — praca antyrotacyjna, kluczowa dla ochrony lędźwi.", partie: "Skośne brzucha, antyrotacja", serie: 3, zakres: "10", jedn: "kg", przerwa: 60, przerwaPo: 90, jednostronne: true },
+      { id: "a7", nazwa: "Plank boczny", detal: "", en: "Side Plank", opis: "Podpór na przedramieniu, łokieć pod barkiem. Ciało w jednej linii od kostki po głowę. Biodra wypchnij w górę i nie pozwól im opaść. Bark odsunięty od ucha. Oddychaj spokojnie, nie wstrzymuj.", opisPartie: "Skośne brzucha, czworoboczny lędźwi, pośladek średni.", partie: "Skośne, czworoboczny lędźwi, pośladek średni", serie: 3, zakres: "30 s", jedn: "s", przerwa: 45, przerwaPo: 0, jednostronne: true, bezPowtorzen: true },
     ],
   },
   B: {
     nazwa: "Trening B",
     akcent: "Klatka · barki · nogi · triceps",
     cwiczenia: [
-      { id: "b1", nazwa: "Wyciskanie sztangą na skosie", detal: "15–30°", partie: "Górna klatka, przedni bark, triceps", serie: 4, zakres: "6–8", jedn: "kg", przerwa: 180, przerwaPo: 180 },
-      { id: "b8", nazwa: "Wyciskanie hantlami na ławce płaskiej", detal: "", partie: "Środkowa i dolna klatka, triceps", serie: 3, zakres: "10", jedn: "kg", przerwa: 120, przerwaPo: 150 },
-      { id: "b2", nazwa: "Wyciskanie hantli nad głowę siedząc", detal: "z oparciem", partie: "Barki, triceps, kapturowy", serie: 3, zakres: "10", jedn: "kg", przerwa: 120, przerwaPo: 150 },
-      { id: "b3", nazwa: "Face pull", detal: "", partie: "Tylny bark, międzyłopatkowe, rotatory", serie: 4, zakres: "15", jedn: "kg", przerwa: 60, przerwaPo: 120 },
-      { id: "b4", nazwa: "Przysiad bułgarski / suwnica", detal: "", partie: "Czworogłowe, pośladki", serie: 3, zakres: "10", jedn: "kg", przerwa: 120, przerwaPo: 180, jednostronne: true },
-      { id: "b9", nazwa: "Wyciskanie francuskie", detal: "sztanga łamana, leżąc", partie: "Triceps (głowa długa)", serie: 3, zakres: "12", jedn: "kg", przerwa: 75, przerwaPo: 120 },
-      { id: "b6", nazwa: "Farmer's walk", detal: "", partie: "Gorset, kapturowy, chwyt", serie: 3, zakres: "30–40 m", jedn: "kg", jednPowt: "m", przerwa: 90, przerwaPo: 120 },
-      { id: "b10", nazwa: "Unoszenie nóg w zwisie", detal: "kolana ugięte, bez bujania", partie: "Dolny brzuch, biodrowo-lędźwiowy", serie: 3, zakres: "15", jedn: "powt.", przerwa: 60, przerwaPo: 90, bezPowtorzen: true },
-      { id: "b11", nazwa: "Spięcia brzucha", detal: "lędźwie na podłodze", partie: "Prosty brzucha", serie: 3, zakres: "15", jedn: "powt.", przerwa: 45, przerwaPo: 0, bezPowtorzen: true },
+      { id: "b1", nazwa: "Wyciskanie sztangą na skosie", detal: "15–30°", en: "Incline Barbell Press", opis: "Ławka 15–30°. Łopatki ściągnięte i wbite w ławkę, stopy pewnie na podłodze. Sztanga schodzi do górnej części klatki, tuż pod obojczyki. Łokcie ok. 45°, nie rozkładaj ich na boki. Nadgarstki nad łokciami. Dół pleców pozostaje na ławce — jeśli się odrywa, zdejmij ciężar.", opisPartie: "Górna część klatki, przedni bark, triceps.", partie: "Górna klatka, przedni bark, triceps", serie: 4, zakres: "6–8", jedn: "kg", przerwa: 180, przerwaPo: 180 },
+      { id: "b8", nazwa: "Wyciskanie hantlami na ławce płaskiej", detal: "", en: "Flat Dumbbell Press", opis: "Hantle nad środkiem klatki, łokcie pod kątem 45°. Opuszczaj do poziomu klatki lub minimalnie niżej, bez wymuszania rozciągnięcia. Na górze nie stukaj hantlami o siebie i nie prostuj łokci do blokady. Łopatki ściągnięte przez cały czas.", opisPartie: "Środkowa i dolna część klatki, przedni bark, triceps.", partie: "Środkowa i dolna klatka, triceps", serie: 3, zakres: "10", jedn: "kg", przerwa: 120, przerwaPo: 150 },
+      { id: "b2", nazwa: "Wyciskanie hantli nad głowę siedząc", detal: "wstrzymane — bark", en: "Seated Dumbbell Shoulder Press", opis: "WSTRZYMANE do ustąpienia dolegliwości barku. Przy powrocie: oparcie pionowe, hantle chwytem neutralnym (dłonie do siebie) — mniej drażni przestrzeń podbarkową. Zacznij od połowy ostatniego ciężaru.", opisPartie: "Bark przedni i boczny, triceps, czworoboczny.", partie: "Barki, triceps, kapturowy", serie: 3, zakres: "10", jedn: "kg", przerwa: 120, przerwaPo: 150 },
+      { id: "b3", nazwa: "Face pull", detal: "", en: "Face Pull", opis: "Linka ustawiona na wysokości twarzy. Ciągniesz do czoła, rozdzielając ręce na boki, łokcie wysoko. Na końcu ruchu zewnętrzna rotacja — kciuki wskazują do tyłu. Ciężar lekki, ruch płynny. To ćwiczenie zdrowia barku, nie siły.", opisPartie: "Tylny bark, mięśnie międzyłopatkowe, rotatory zewnętrzne.", partie: "Tylny bark, międzyłopatkowe, rotatory", serie: 4, zakres: "15", jedn: "kg", przerwa: 60, przerwaPo: 120 },
+      { id: "b4", nazwa: "Przysiad bułgarski / suwnica", detal: "", en: "Bulgarian Split Squat / Leg Press", opis: "Suwnica: stopy na szerokość bioder, kolana podążają za palcami. Schodź do kąta, w którym miednica nie zaczyna się podwijać — to granica bezpieczna dla lędźwi. Nie prostuj kolan do pełnej blokady. Bułgarski: tylna noga na ławce, ciężar na przedniej pięcie, tułów lekko pochylony.", opisPartie: "Czworogłowe uda, pośladki, przywodziciele.", partie: "Czworogłowe, pośladki", serie: 3, zakres: "10", jedn: "kg", przerwa: 120, przerwaPo: 180, jednostronne: true },
+      { id: "b9", nazwa: "Wyciskanie francuskie", detal: "sztanga łamana, leżąc", en: "Skull Crusher", opis: "Leżąc, sztanga łamana. Ramiona nieruchome i skierowane lekko do tyłu, nie pionowo — utrzymuje napięcie na tricepsie. Zginasz tylko łokcie, sztanga schodzi nad czoło lub za głowę. Ruch wolny, bez odbijania. Przy dyskomforcie w łokciach zmniejsz ciężar.", opisPartie: "Triceps, przede wszystkim głowa długa.", partie: "Triceps (głowa długa)", serie: 3, zakres: "12", jedn: "kg", przerwa: 75, przerwaPo: 120 },
+      { id: "b12", nazwa: "Wiosłowanie z podparciem klatki", detal: "maszyna lub ławka skośna", en: "Chest-Supported Row", opis: "Klatka oparta o poduszkę — dzięki temu kręgosłup nie przenosi obciążenia. Zacznij od ściągnięcia łopatek, potem zginaj łokcie. Ciągnij do dolnych żeber, łokcie blisko tułowia. Na końcu sekunda spięcia. Nie odrywaj klatki od oparcia, żeby dołożyć ciężar.", opisPartie: "Środkowe plecy, czworoboczny, romboidalne, tylny bark, biceps.", partie: "Środkowe plecy, kapturowy, tylny bark", serie: 4, zakres: "10", jedn: "kg", przerwa: 120, przerwaPo: 150 },
+      { id: "b10", nazwa: "Unoszenie nóg w zwisie", detal: "kolana ugięte, bez bujania", en: "Hanging Knee Raise", opis: "Zwis na drążku, barki aktywne (nie zwisaj biernie). Podciągasz kolana ugięte, podwijając miednicę — sam ruch nóg to za mało. Opuszczaj wolno, bez bujania. Jeśli zaczynasz się rozkołysać, przerwij serię.", opisPartie: "Dolna część prostego brzucha, biodrowo-lędźwiowy.", partie: "Dolny brzuch, biodrowo-lędźwiowy", serie: 3, zakres: "15", jedn: "powt.", przerwa: 60, przerwaPo: 90, bezPowtorzen: true },
+      { id: "b11", nazwa: "Spięcia brzucha", detal: "ławka skośna, nogi zaczepione", en: "Decline Crunch", opis: "Ławka lekko skośna, nogi zaczepione i podkurczone. Zwijasz kręgosłup odcinek po odcinku, nie unosisz całego tułowia sztywno. Podbródek odsunięty od klatki, ręce nie ciągną za głowę. Wracaj kontrolowanie.", opisPartie: "Prosty brzucha, w części górnej.", partie: "Prosty brzucha", serie: 3, zakres: "15", jedn: "powt.", przerwa: 45, przerwaPo: 0, bezPowtorzen: true },
     ],
   },
 };
@@ -134,9 +134,10 @@ const KLUCZ = "dziennik:sesje";
 const KLUCZ_WSK = "dziennik:wskazowki";
 const KLUCZ_GH = "dziennik:github";
 const KLUCZ_MOTYW = "dziennik:motyw";
+const KLUCZ_PLAN = "dziennik:plan";
 
-const WERSJA = "1.8";
-const DATA_WERSJI = "2026-08-29";
+const WERSJA = "2.2";
+const DATA_WERSJI = "2026-08-30";
 
 /* ---------------------------------------------------------------
    SYNCHRONIZACJA Z GITHUBEM
@@ -417,6 +418,7 @@ function DziennikTreningowy() {
   const [rodzajZapisu, setRodzajZapisu] = useState(null);
   const [konfigGH, setKonfigGH] = useState(null);
   const [motyw, setMotyw] = useState("multicam");
+  const [nadpisania, setNadpisania] = useState({});
   const [stanGH, setStanGH] = useState({ etap: "bezczynny", tekst: "" });
   const [widok, setWidok] = useState("start");
   const [aktywna, setAktywna] = useState(null);
@@ -442,6 +444,12 @@ function DziennikTreningowy() {
         if (g) setKonfigGH(JSON.parse(g));
       } catch (e) {
         // brak konfiguracji synchronizacji
+      }
+      try {
+        const n = await magazyn.czytaj(KLUCZ_PLAN);
+        if (n) setNadpisania(JSON.parse(n));
+      } catch (e) {
+        // brak nadpisań planu
       }
       try {
         const m = await magazyn.czytaj(KLUCZ_MOTYW);
@@ -472,7 +480,7 @@ function DziennikTreningowy() {
     setSesje(noweSesje);
     const ok = await magazyn.pisz(KLUCZ, JSON.stringify(noweSesje));
     setAwaria(ok ? null : { szczegol: magazyn.szczegol });
-    wyslijDoGH(noweSesje, wskazowki);
+    wyslijDoGH(noweSesje, wskazowki, nadpisania);
     return ok;
   };
 
@@ -480,7 +488,14 @@ function DziennikTreningowy() {
     const nowe = { ...wskazowki, [plan]: tekst };
     setWskazowki(nowe);
     await magazyn.pisz(KLUCZ_WSK, JSON.stringify(nowe));
-    wyslijDoGH(sesje, nowe);
+    wyslijDoGH(sesje, nowe, nadpisania);
+  };
+
+  const zapiszNadpisanie = async (cwId, pola) => {
+    const nowe = { ...nadpisania, [cwId]: { ...(nadpisania[cwId] || {}), ...pola } };
+    setNadpisania(nowe);
+    await magazyn.pisz(KLUCZ_PLAN, JSON.stringify(nowe));
+    wyslijDoGH(sesje, wskazowki, nowe);
   };
 
   const zapiszKonfigGH = async (k) => {
@@ -490,7 +505,7 @@ function DziennikTreningowy() {
 
   const gotowyGH = (k) => k && k.token && k.wlasciciel && k.repo && k.sciezka;
 
-  const wyslijDoGH = async (noweSesje, noweWskazowki) => {
+  const wyslijDoGH = async (noweSesje, noweWskazowki, noweNadpisania) => {
     const k = konfigGH;
     if (!gotowyGH(k)) return;
     setStanGH({ etap: "praca", tekst: "wysyłam…" });
@@ -498,7 +513,7 @@ function DziennikTreningowy() {
       const obecne = await github.pobierz(k);
       await github.wyslij(
         k,
-        { wersja: WERSJA, zapisano: new Date().toISOString(), sesje: noweSesje, wskazowki: noweWskazowki },
+        { wersja: WERSJA, zapisano: new Date().toISOString(), sesje: noweSesje, wskazowki: noweWskazowki, plan: noweNadpisania || nadpisania },
         obecne.istnieje ? obecne.sha : null
       );
       setStanGH({ etap: "ok", tekst: `wysłano ${new Date().toTimeString().slice(0, 5)}` });
@@ -521,6 +536,10 @@ function DziennikTreningowy() {
       if (Array.isArray(dane.sesje)) {
         setSesje(dane.sesje);
         await magazyn.pisz(KLUCZ, JSON.stringify(dane.sesje));
+      }
+      if (dane.plan) {
+        setNadpisania(dane.plan);
+        await magazyn.pisz(KLUCZ_PLAN, JSON.stringify(dane.plan));
       }
       if (dane.wskazowki) {
         const w = { A: "", B: "", ...dane.wskazowki };
@@ -605,6 +624,8 @@ function DziennikTreningowy() {
             sesja={aktywna}
             setSesja={setAktywna}
             wskazowka={wskazowki[aktywna.plan] || ""}
+            nadpisania={nadpisania}
+            zapiszNadpisanie={zapiszNadpisanie}
             zapiszWskazowki={zapiszWskazowki}
             ostatnieDlaCwiczenia={ostatnieDlaCwiczenia}
             zapiszSesje={zapiszSesje}
@@ -620,7 +641,7 @@ function DziennikTreningowy() {
           <Chmura
             konfig={konfigGH}
             zapiszKonfig={zapiszKonfigGH}
-            wyslij={() => wyslijDoGH(sesje, wskazowki)}
+            wyslij={() => wyslijDoGH(sesje, wskazowki, nadpisania)}
             pobierz={pobierzZGH}
             stan={stanGH}
             sesje={sesje}
@@ -848,7 +869,7 @@ function Stoper({ przerwa, przerwaPo }) {
 /* ---------------------------------------------------------------
    SESJA TRENINGOWA
    --------------------------------------------------------------- */
-function Sesja({ sesja, setSesja, wskazowka, zapiszWskazowki, ostatnieDlaCwiczenia, zapiszSesje, anuluj }) {
+function Sesja({ sesja, setSesja, wskazowka, zapiszWskazowki, nadpisania, zapiszNadpisanie, ostatnieDlaCwiczenia, zapiszSesje, anuluj }) {
   const plan = PLANY[sesja.plan];
   const [pokazPodsumowanie, setPokazPodsumowanie] = useState(false);
 
@@ -878,6 +899,19 @@ function Sesja({ sesja, setSesja, wskazowka, zapiszWskazowki, ostatnieDlaCwiczen
   const przelaczRozgrzewke = (id) => {
     const lista = sesja.rozgrzewka || [];
     setSesja({ ...sesja, rozgrzewka: lista.includes(id) ? lista.filter((x) => x !== id) : [...lista, id] });
+  };
+
+  const dodajSerie = (cwId) => {
+    const wpis = wpisCwiczenia(cwId);
+    ustawWpis(cwId, { ...wpis, dodatkowe: (wpis.dodatkowe || 0) + 1 });
+  };
+
+  const usunSerie = (cwId) => {
+    const wpis = wpisCwiczenia(cwId);
+    if (!wpis.dodatkowe) return;
+    const serie = [...wpis.serie];
+    serie.pop();
+    ustawWpis(cwId, { ...wpis, dodatkowe: wpis.dodatkowe - 1, serie });
   };
 
   const tekstPodsumowania = () => {
@@ -911,9 +945,13 @@ function Sesja({ sesja, setSesja, wskazowka, zapiszWskazowki, ostatnieDlaCwiczen
           key={cw.id}
           numer={i + 1}
           cw={cw}
+          nadpisanie={nadpisania[cw.id]}
+          zapiszNadpisanie={zapiszNadpisanie}
           wpis={wpisCwiczenia(cw.id)}
           ustawSerie={ustawSerie}
           przelaczStrony={przelaczStrony}
+          dodajSerie={dodajSerie}
+          usunSerie={usunSerie}
           ostatnie={ostatnieDlaCwiczenia(cw.id, sesja.id)}
         />
       ))}
@@ -964,12 +1002,25 @@ function Sesja({ sesja, setSesja, wskazowka, zapiszWskazowki, ostatnieDlaCwiczen
    --------------------------------------------------------------- */
 function Wskazowki({ plan, tekst, zapisz }) {
   const [edycja, setEdycja] = useState(false);
+  const [potwierdzKasowanie, setPotwierdzKasowanie] = useState(false);
   const [roboczy, setRoboczy] = useState(tekst);
 
   useEffect(() => { setRoboczy(tekst); }, [tekst]);
 
   const zatwierdz = () => {
     zapisz(plan, roboczy);
+    setEdycja(false);
+    setPotwierdzKasowanie(false);
+  };
+
+  const kasuj = () => {
+    if (!potwierdzKasowanie) {
+      setPotwierdzKasowanie(true);
+      return;
+    }
+    setRoboczy("");
+    zapisz(plan, "");
+    setPotwierdzKasowanie(false);
     setEdycja(false);
   };
 
@@ -978,9 +1029,14 @@ function Wskazowki({ plan, tekst, zapisz }) {
       <button
         onClick={() => setEdycja(true)}
         className="dt-focus"
-        style={{ ...mono, background: "none", border: `1px dashed ${C.line}`, color: C.steel, fontSize: 11.5, padding: "11px 0", width: "100%", cursor: "pointer", marginBottom: 20, letterSpacing: "0.04em" }}
+        style={{
+          ...mono, display: "flex", alignItems: "center", justifyContent: "center", gap: 9,
+          background: C.pole, border: `1px solid ${C.signal}`, color: C.signal,
+          fontSize: 12.5, fontWeight: 700, letterSpacing: "0.09em",
+          padding: "14px 0", width: "100%", cursor: "pointer", marginBottom: 20,
+        }}
       >
-        + WSKAZÓWKI NA TEN TRENING
+        <span style={{ fontSize: 17, lineHeight: 1, fontWeight: 400 }}>+</span> WSKAZÓWKI NA TEN TRENING
       </button>
     );
   }
@@ -994,7 +1050,12 @@ function Wskazowki({ plan, tekst, zapisz }) {
         <button
           onClick={() => (edycja ? zatwierdz() : setEdycja(true))}
           className="dt-focus"
-          style={{ ...mono, background: "none", border: "none", color: edycja ? C.ok : C.steel, fontSize: 11, cursor: "pointer", padding: 4, fontWeight: 600 }}
+          style={{
+            ...mono, background: "none",
+            border: `1px solid ${edycja ? C.ok : C.line}`,
+            color: edycja ? C.ok : C.inkSoft,
+            fontSize: 11, cursor: "pointer", padding: "7px 13px", fontWeight: 700, letterSpacing: "0.08em",
+          }}
         >
           {edycja ? "✓ ZAPISZ" : "EDYTUJ"}
         </button>
@@ -1011,13 +1072,34 @@ function Wskazowki({ plan, tekst, zapisz }) {
             className="dt-focus"
             style={{ ...body, width: "100%", background: C.pole, border: `1px solid ${C.line}`, padding: 10, fontSize: 14, color: C.ink, resize: "vertical", lineHeight: 1.5 }}
           />
-          <button
-            onClick={() => { zapisz(plan, ""); setRoboczy(""); setEdycja(false); }}
-            className="dt-focus"
-            style={{ ...mono, background: "none", border: "none", color: C.steel, fontSize: 11, padding: "8px 0 0", cursor: "pointer" }}
-          >
-            WYCZYŚĆ
-          </button>
+          <div style={{ display: "flex", gap: 7, marginTop: 9 }}>
+            <button
+              onMouseDown={(e) => e.preventDefault()}
+              onTouchStart={(e) => e.preventDefault()}
+              onClick={kasuj}
+              className="dt-focus"
+              style={{
+                ...mono, flex: 1, cursor: "pointer", fontSize: 11, padding: "10px 0", letterSpacing: "0.04em",
+                background: potwierdzKasowanie ? C.hot : "none",
+                border: `1px solid ${potwierdzKasowanie ? C.hot : C.line}`,
+                color: potwierdzKasowanie ? C.paper : C.steel,
+                fontWeight: potwierdzKasowanie ? 700 : 400,
+              }}
+            >
+              {potwierdzKasowanie ? "STUKNIJ PONOWNIE, ABY SKASOWAĆ" : "KASUJ TEKST"}
+            </button>
+            {potwierdzKasowanie && (
+              <button
+                onMouseDown={(e) => e.preventDefault()}
+                onTouchStart={(e) => e.preventDefault()}
+                onClick={() => setPotwierdzKasowanie(false)}
+                className="dt-focus"
+                style={{ ...mono, width: 70, background: "none", border: `1px solid ${C.line}`, color: C.steel, fontSize: 11, padding: "10px 0", cursor: "pointer" }}
+              >
+                NIE
+              </button>
+            )}
+          </div>
         </>
       ) : (
         <div style={{ fontSize: 14, color: C.ink, lineHeight: 1.55, whiteSpace: "pre-wrap" }}>{tekst}</div>
@@ -1076,8 +1158,25 @@ function Rozgrzewka({ zaznaczone, przelacz }) {
 /* ---------------------------------------------------------------
    POJEDYNCZE ĆWICZENIE
    --------------------------------------------------------------- */
-function Cwiczenie({ numer, cw, wpis, ustawSerie, przelaczStrony, ostatnie }) {
+function Cwiczenie({ numer, cw, nadpisanie, zapiszNadpisanie, wpis, ustawSerie, przelaczStrony, dodajSerie, usunSerie, ostatnie }) {
   const serie = wpis.serie || [];
+  const [edycjaCelu, setEdycjaCelu] = useState(false);
+  const [pokazOpis, setPokazOpis] = useState(false);
+  const celSerie = (nadpisanie && nadpisanie.serie) || cw.serie;
+  const celZakres = (nadpisanie && nadpisanie.zakres) || cw.zakres;
+  const [roboczySerie, setRoboczySerie] = useState(String(celSerie));
+  const [roboczyZakres, setRoboczyZakres] = useState(celZakres);
+  const ileWierszy = celSerie + (wpis.dodatkowe || 0);
+
+  const zatwierdzCel = () => {
+    const n = parseInt(roboczySerie, 10);
+    zapiszNadpisanie(cw.id, {
+      serie: Number.isFinite(n) && n > 0 && n < 20 ? n : celSerie,
+      zakres: roboczyZakres.trim() || celZakres,
+    });
+    setEdycjaCelu(false);
+  };
+
   const ostTop = ostatnie ? topSeria(ostatnie.serie) : null;
   const terazTop = topSeria(serie);
   const rekord =
@@ -1090,16 +1189,87 @@ function Cwiczenie({ numer, cw, wpis, ustawSerie, przelaczStrony, ostatnie }) {
       <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
         <span style={{ ...mono, fontSize: 12, color: C.steel, fontWeight: 600, paddingTop: 3, minWidth: 16 }}>{numer}</span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ ...display, fontSize: 19, fontWeight: 600, lineHeight: 1.15 }}>
-            {cw.nazwa}
-            {cw.detal && <span style={{ ...mono, fontSize: 11, color: C.steel, marginLeft: 7, fontWeight: 400 }}>{cw.detal}</span>}
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ ...display, fontSize: 19, fontWeight: 600, lineHeight: 1.15 }}>
+                {cw.nazwa}
+                {cw.detal && <span style={{ ...mono, fontSize: 11, color: C.steel, marginLeft: 7, fontWeight: 400 }}>{cw.detal}</span>}
+              </div>
+              {cw.en && <div style={{ ...mono, fontSize: 11, color: C.steel, marginTop: 2 }}>({cw.en})</div>}
+            </div>
+            <button
+              onClick={() => setPokazOpis(!pokazOpis)}
+              className="dt-focus"
+              aria-label="Opis ćwiczenia"
+              style={{
+                background: pokazOpis ? C.signal : "none",
+                border: `1px solid ${pokazOpis ? C.signal : C.line}`,
+                color: pokazOpis ? C.paper : C.steel,
+                width: 30, height: 30, flexShrink: 0, cursor: "pointer",
+                ...mono, fontSize: 14, fontWeight: 700, lineHeight: 1, padding: 0,
+              }}
+            >
+              ?
+            </button>
           </div>
-          <div style={{ fontSize: 11.5, color: C.steel, marginTop: 3, lineHeight: 1.35 }}>{cw.partie}</div>
-          <div style={{ ...mono, fontSize: 11, color: C.inkSoft, marginTop: 6 }}>
-            CEL: {cw.serie} × {cw.zakres}
-            <span style={{ color: C.steel }}> · PRZERWA {mmss(cw.przerwa)}</span>
-            {rekord && <span style={{ color: C.hot, fontWeight: 700, marginLeft: 8 }}>+{rekord} {cw.jedn}</span>}
-          </div>
+
+          {pokazOpis && (
+            <div style={{ background: C.pole, border: `1px solid ${C.line}`, padding: "11px 12px", marginTop: 9 }}>
+              <div style={{ ...mono, fontSize: 10, color: C.signal, letterSpacing: "0.08em", marginBottom: 5 }}>TECHNIKA</div>
+              <div style={{ fontSize: 13, lineHeight: 1.55, color: C.ink }}>{cw.opis}</div>
+              <div style={{ ...mono, fontSize: 10, color: C.signal, letterSpacing: "0.08em", margin: "11px 0 5px" }}>PARTIE</div>
+              <div style={{ fontSize: 13, lineHeight: 1.55, color: C.inkSoft }}>{cw.opisPartie || cw.partie}</div>
+            </div>
+          )}
+
+          <div style={{ fontSize: 11.5, color: C.steel, marginTop: 6, lineHeight: 1.35 }}>{cw.partie}</div>
+
+          {edycjaCelu ? (
+            <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 8 }}>
+              <input
+                value={roboczySerie}
+                onChange={(e) => setRoboczySerie(e.target.value)}
+                inputMode="numeric"
+                className="dt-focus"
+                style={{ ...mono, width: 44, background: C.pole, border: `1px solid ${C.line}`, padding: "7px 6px", fontSize: 13, color: C.ink, textAlign: "center" }}
+              />
+              <span style={{ ...mono, fontSize: 12, color: C.steel }}>×</span>
+              <input
+                value={roboczyZakres}
+                onChange={(e) => setRoboczyZakres(e.target.value)}
+                className="dt-focus"
+                style={{ ...mono, flex: 1, background: C.pole, border: `1px solid ${C.line}`, padding: "7px 8px", fontSize: 13, color: C.ink }}
+              />
+              <button
+                onClick={zatwierdzCel}
+                className="dt-focus"
+                style={{ ...mono, background: "none", border: `1px solid ${C.ok}`, color: C.ok, fontSize: 13, cursor: "pointer", padding: "8px 12px", fontWeight: 700 }}
+              >
+                ✓
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => { setRoboczySerie(String(celSerie)); setRoboczyZakres(celZakres); setEdycjaCelu(true); }}
+              className="dt-focus"
+              style={{ ...mono, display: "flex", alignItems: "center", gap: 8, width: "100%", background: "none", border: "none", padding: "8px 0 0", cursor: "pointer", textAlign: "left", fontSize: 11, color: C.inkSoft }}
+            >
+              <span
+                style={{
+                  fontSize: 19, lineHeight: 1, color: nadpisanie ? C.signal : C.steel,
+                  border: `1px solid ${nadpisanie ? C.signal : C.line}`,
+                  width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                }}
+              >
+                ✎
+              </span>
+              <span>
+                CEL: {celSerie} × {celZakres}
+                <span style={{ color: C.steel }}> · PRZERWA {mmss(cw.przerwa)}</span>
+                {rekord && <span style={{ color: C.hot, fontWeight: 700, marginLeft: 8 }}>+{rekord} {cw.jedn}</span>}
+              </span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -1161,7 +1331,7 @@ function Cwiczenie({ numer, cw, wpis, ustawSerie, przelaczStrony, ostatnie }) {
       )}
 
       <div style={{ marginTop: 11 }}>
-        {Array.from({ length: cw.serie }).map((_, i) => {
+        {Array.from({ length: ileWierszy }).map((_, i) => {
           const s = { ...pusteSerie(), ...(serie[i] || {}) };
           const ostS = ostatnie?.serie?.[i];
           return (
@@ -1194,6 +1364,35 @@ function Cwiczenie({ numer, cw, wpis, ustawSerie, przelaczStrony, ostatnie }) {
             </div>
           );
         })}
+      </div>
+
+      <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+        <button
+          onClick={() => dodajSerie(cw.id)}
+          className="dt-focus"
+          style={{
+            ...mono, flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            background: C.pole, border: `1px solid ${C.signal}`, color: C.signal,
+            fontSize: 12.5, fontWeight: 700, letterSpacing: "0.1em",
+            padding: "13px 0", cursor: "pointer",
+          }}
+        >
+          <span style={{ fontSize: 17, lineHeight: 1, fontWeight: 400 }}>+</span> SERIA
+        </button>
+        {wpis.dodatkowe > 0 && (
+          <button
+            onClick={() => usunSerie(cw.id)}
+            className="dt-focus"
+            style={{
+              ...mono, width: 104, display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              background: "none", border: `1px solid ${C.line}`, color: C.steel,
+              fontSize: 12.5, fontWeight: 700, letterSpacing: "0.1em",
+              padding: "13px 0", cursor: "pointer",
+            }}
+          >
+            <span style={{ fontSize: 17, lineHeight: 1, fontWeight: 400 }}>−</span> SERIA
+          </button>
+        )}
       </div>
 
       <Stoper przerwa={cw.przerwa} przerwaPo={cw.przerwaPo} />
