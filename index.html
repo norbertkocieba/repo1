@@ -89,24 +89,24 @@ const mono = { fontFamily: "'IBM Plex Mono', ui-monospace, monospace" };
    bezPowtorzen – tylko jedna wartość (np. sekundy planku)
    --------------------------------------------------------------- */
 const ROZGRZEWKA = [
-  { id: "w1", nazwa: "Bieg na bieżni", detal: "1 km, 9 → 12 km/h" },
-  { id: "w2", nazwa: "Krążenia barków i bioder", detal: "" },
-  { id: "w3", nazwa: "Bird dog", detal: "2 × 8 / stronę" },
-  { id: "w4", nazwa: "Martwy robak", detal: "2 × 8 / stronę" },
-  { id: "w6", nazwa: "Most izometryczny na piłce", detal: "30 s" },
-  { id: "w7", nazwa: "Most boczny na piłce", detal: "30 s / stronę" },
+  { id: "w1", nazwa: "Bieg na bieżni", en: "Treadmill Run", detal: "1 km, 9 → 12 km/h" },
+  { id: "w2", nazwa: "Krążenia barków i bioder", en: "Shoulder & Hip Circles", detal: "" },
+  { id: "w3", nazwa: "Pies ptak", en: "Bird Dog", detal: "2 × 8 / stronę" },
+  { id: "w4", nazwa: "Martwy robak", en: "Dead Bug", detal: "2 × 8 / stronę" },
+  { id: "w6", nazwa: "Most izometryczny na piłce", en: "Ball Bridge Hold", detal: "30 s" },
+  { id: "w7", nazwa: "Most boczny na piłce", en: "Side Bridge on Ball", detal: "30 s / stronę" },
 ];
 
 const GRUPY = [
-  { id: "klatka-gora", nazwa: "Klatka — góra" },
-  { id: "klatka-srodek", nazwa: "Klatka — środek i dół" },
-  { id: "plecy-szerokosc", nazwa: "Plecy — szerokość" },
-  { id: "plecy-grubosc", nazwa: "Plecy — grubość i kaptur" },
-  { id: "barki", nazwa: "Barki" },
-  { id: "triceps", nazwa: "Triceps" },
-  { id: "biceps", nazwa: "Biceps i przedramię" },
-  { id: "nogi", nazwa: "Nogi i pośladki" },
-  { id: "gorset", nazwa: "Gorset i brzuch" },
+  { id: "klatka-gora", nazwa: "Klatka — góra", en: "Upper Chest" },
+  { id: "klatka-srodek", nazwa: "Klatka — środek i dół", en: "Mid & Lower Chest" },
+  { id: "plecy-szerokosc", nazwa: "Plecy — szerokość", en: "Back — Width" },
+  { id: "plecy-grubosc", nazwa: "Plecy — grubość i kaptur", en: "Back — Thickness & Traps" },
+  { id: "barki", nazwa: "Barki", en: "Shoulders" },
+  { id: "triceps", nazwa: "Triceps", en: "Triceps" },
+  { id: "biceps", nazwa: "Biceps i przedramię", en: "Biceps & Forearms" },
+  { id: "nogi", nazwa: "Nogi i pośladki", en: "Legs & Glutes" },
+  { id: "gorset", nazwa: "Gorset i brzuch", en: "Core & Abs" },
 ];
 
 const BAZA = [
@@ -202,7 +202,7 @@ const KLUCZ_GH = "dziennik:github";
 const KLUCZ_MOTYW = "dziennik:motyw";
 const KLUCZ_PLAN = "dziennik:plan";
 
-const WERSJA = "2.4";
+const WERSJA = "2.6";
 const DATA_WERSJI = "2026-08-30";
 
 /* ---------------------------------------------------------------
@@ -1285,7 +1285,10 @@ function Rozgrzewka({ zaznaczone, przelacz }) {
         className="dt-focus"
         style={{ width: "100%", background: "none", border: "none", padding: "13px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}
       >
-        <span style={{ ...display, fontSize: 17, fontWeight: 600, textTransform: "uppercase" }}>Rozgrzewka i gorset</span>
+        <span style={{ textAlign: "left" }}>
+          <span style={{ ...display, fontSize: 17, fontWeight: 600, textTransform: "uppercase", display: "block" }}>Rozgrzewka i gorset</span>
+          <span style={{ ...mono, fontSize: 10.5, color: C.steel, display: "block", marginTop: 2 }}>(Warm-Up &amp; Core)</span>
+        </span>
         <span style={{ ...mono, fontSize: 11, color: gotowe === ROZGRZEWKA.length ? C.ok : C.steel }}>
           {gotowe}/{ROZGRZEWKA.length} {otwarte ? "▲" : "▼"}
         </span>
@@ -1305,9 +1308,10 @@ function Rozgrzewka({ zaznaczone, przelacz }) {
                 <span style={{ width: 19, height: 19, flexShrink: 0, border: `2px solid ${zrobione ? C.ok : C.steel}`, background: zrobione ? C.ok : "transparent", color: C.paper, fontSize: 12, lineHeight: "15px", textAlign: "center", fontWeight: 700 }}>
                   {zrobione ? "✓" : ""}
                 </span>
-                <span style={{ fontSize: 14, color: zrobione ? C.steel : C.ink, textDecoration: zrobione ? "line-through" : "none" }}>
-                  {p.nazwa}
+                <span style={{ flex: 1, minWidth: 0, textDecoration: zrobione ? "line-through" : "none" }}>
+                  <span style={{ fontSize: 14, color: zrobione ? C.steel : C.ink }}>{p.nazwa}</span>
                   {p.detal && <span style={{ ...mono, fontSize: 11, color: C.steel, marginLeft: 8 }}>{p.detal}</span>}
+                  {p.en && <span style={{ ...mono, display: "block", fontSize: 10.5, color: C.steel, marginTop: 2 }}>({p.en})</span>}
                 </span>
               </button>
             );
@@ -2083,6 +2087,7 @@ function Wybierak({ juzWPlanie, nazwyWPlanie, wybierz, zamknij }) {
               <div key={g.id} style={{ marginTop: 16 }}>
                 <div style={{ ...mono, fontSize: 10, letterSpacing: "0.12em", color: C.signal, marginBottom: 8, fontWeight: 700 }}>
                   {g.nazwa.toUpperCase()}
+                  {g.en && <span style={{ color: C.steel, fontWeight: 400 }}> · {g.en.toUpperCase()}</span>}
                 </div>
                 {wGrupie.map((c) => {
                   const jest = juzWPlanie.includes(c.id) || nazwyWPlanie.includes(c.nazwa);
