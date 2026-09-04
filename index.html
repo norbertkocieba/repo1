@@ -204,7 +204,7 @@ const KLUCZ_GH = "dziennik:github";
 const KLUCZ_MOTYW = "dziennik:motyw";
 const KLUCZ_PLAN = "dziennik:plan";
 
-const WERSJA = "3.2";
+const WERSJA = "3.3";
 const DATA_WERSJI = "2026-08-30";
 
 /* ---------------------------------------------------------------
@@ -1095,6 +1095,39 @@ function Sesja({ sesja, setSesja, wskazowka, zapiszWskazowki, nadpisania, zapisz
     ustawWpis(cwId, { ...wpis, dodatkowe: wpis.dodatkowe - 1, serie });
   };
 
+  const poleKopii = useRef(null);
+  const [skopiowane, setSkopiowane] = useState(false);
+
+  const kopiuj = async () => {
+    const tekst = tekstPodsumowania();
+    let udane = false;
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(tekst);
+        udane = true;
+      }
+    } catch (e) {
+      udane = false;
+    }
+    if (!udane && poleKopii.current) {
+      // zapasowo: zaznaczenie pola i starsze polecenie kopiowania
+      try {
+        poleKopii.current.focus();
+        poleKopii.current.setSelectionRange(0, tekst.length);
+        udane = document.execCommand("copy");
+      } catch (e) {
+        udane = false;
+      }
+    }
+    if (udane) {
+      if (navigator.vibrate) navigator.vibrate(15);
+      setSkopiowane(true);
+      setTimeout(() => setSkopiowane(false), 2000);
+    } else if (poleKopii.current) {
+      poleKopii.current.select();
+    }
+  };
+
   const tekstPodsumowania = () => {
     const linie = [`${plan.nazwa} — ${formatData(sesja.data)}`, ""];
     cwiczeniaSesji.forEach((cw) => {
@@ -1192,13 +1225,30 @@ function Sesja({ sesja, setSesja, wskazowka, zapiszWskazowki, nadpisania, zapisz
       </button>
 
       {pokazPodsumowanie && (
-        <textarea
-          readOnly
-          value={tekstPodsumowania()}
-          onFocus={(e) => e.target.select()}
-          rows={10}
-          style={{ ...mono, width: "100%", background: C.card, border: `1px solid ${C.line}`, padding: 11, fontSize: 12, color: C.inkSoft, lineHeight: 1.6 }}
-        />
+        <>
+          <textarea
+            readOnly
+            ref={poleKopii}
+            value={tekstPodsumowania()}
+            onFocus={(e) => e.target.select()}
+            rows={10}
+            style={{ ...mono, width: "100%", background: C.card, border: `1px solid ${C.line}`, padding: 11, fontSize: 12, color: C.inkSoft, lineHeight: 1.6 }}
+          />
+          <button
+            onClick={kopiuj}
+            className="dt-focus"
+            style={{
+              ...mono, display: "flex", alignItems: "center", justifyContent: "center", gap: 9,
+              width: "100%", marginTop: 9, padding: "14px 0", cursor: "pointer",
+              fontSize: 12.5, fontWeight: 700, letterSpacing: "0.09em",
+              background: skopiowane ? C.ok : C.pole,
+              border: `1px solid ${skopiowane ? C.ok : C.signal}`,
+              color: skopiowane ? C.paper : C.signal,
+            }}
+          >
+            {skopiowane ? "✓ SKOPIOWANO" : "KOPIUJ PODSUMOWANIE"}
+          </button>
+        </>
       )}
     </div>
   );
