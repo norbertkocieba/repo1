@@ -164,8 +164,9 @@ const BAZA_MAPA = Object.fromEntries(BAZA.map((c) => [c.id, c]));
 
 const KLUCZ_DODANE = "dziennik:dodane";
 const KLUCZ_KOLEJNOSC = "dziennik:kolejnosc";
+const KLUCZ_PLANY = "dziennik:plany";
 
-const PLANY = {
+const PLANY_DOMYSLNE = {
   A: {
     nazwa: "Trening A",
     akcent: "Klatka · plecy · kaptur · ramiona",
@@ -204,7 +205,7 @@ const KLUCZ_GH = "dziennik:github";
 const KLUCZ_MOTYW = "dziennik:motyw";
 const KLUCZ_PLAN = "dziennik:plan";
 
-const WERSJA = "3.3";
+const WERSJA = "4.0";
 const DATA_WERSJI = "2026-08-30";
 
 /* ---------------------------------------------------------------
@@ -478,6 +479,36 @@ const OPIS_MAGAZYNU = {
 /* ---------------------------------------------------------------
    APLIKACJA
    --------------------------------------------------------------- */
+/* Zbudowanie planu z danych: wartość początkowa + dotychczasowe zmiany
+   (cele, dodane ćwiczenia, kolejność) zapisane w starszych kluczach. */
+function zbudujPlanyZMigracji(nadpisania, dodane, kolejnosc) {
+  const wynik = { kolejnosc: ["A", "B"], plany: {} };
+  ["A", "B"].forEach((id) => {
+    const zrodlo = PLANY_DOMYSLNE[id];
+    let cwiczenia = zrodlo.cwiczenia.map((cw) => {
+      const n = (nadpisania || {})[cw.id];
+      return n ? { ...cw, serie: n.serie ?? cw.serie, zakres: n.zakres ?? cw.zakres } : { ...cw };
+    });
+    ((dodane || {})[id] || []).forEach((cwId) => {
+      const z = BAZA_MAPA[cwId];
+      if (!z || cwiczenia.some((c) => c.id === cwId)) return;
+      const n = (nadpisania || {})[cwId];
+      cwiczenia.push(n ? { ...z, serie: n.serie ?? z.serie, zakres: n.zakres ?? z.zakres } : { ...z });
+    });
+    const kol = (kolejnosc || {})[id] || [];
+    if (kol.length) {
+      const mapa = Object.fromEntries(cwiczenia.map((c) => [c.id, c]));
+      const ulozone = kol.map((x) => mapa[x]).filter(Boolean);
+      cwiczenia = [...ulozone, ...cwiczenia.filter((c) => !kol.includes(c.id))];
+    }
+    wynik.plany[id] = { id, nazwa: zrodlo.nazwa, akcent: zrodlo.akcent, cwiczenia };
+  });
+  return wynik;
+}
+
+/* ---------------------------------------------------------------
+   APLIKACJA
+   --------------------------------------------------------------- */
 function DziennikTreningowy() {
   const [sesje, setSesje] = useState([]);
   const [wskazowki, setWskazowki] = useState({ A: "", B: "" });
@@ -489,6 +520,7 @@ function DziennikTreningowy() {
   const [nadpisania, setNadpisania] = useState({});
   const [dodane, setDodane] = useState({ A: [], B: [] });
   const [kolejnosc, setKolejnosc] = useState({ A: [], B: [] });
+  const [plany, setPlany] = useState(() => zbudujPlanyZMigracji({}, {}, {}));
   const [stanGH, setStanGH] = useState({ etap: "bezczynny", tekst: "" });
   const [widok, setWidok] = useState("start");
   const [aktywna, setAktywna] = useState(null);
@@ -515,23 +547,38 @@ function DziennikTreningowy() {
       } catch (e) {
         // brak konfiguracji synchronizacji
       }
+      let wczytaneNadpisania = {};
+      let wczytaneDodane = {};
+      let wczytanaKolejnosc = {};
       try {
         const k = await magazyn.czytaj(KLUCZ_KOLEJNOSC);
-        if (k) setKolejnosc({ A: [], B: [], ...JSON.parse(k) });
+        if (k) { wczytanaKolejnosc = JSON.parse(k); setKolejnosc({ A: [], B: [], ...wczytanaKolejnosc }); }
       } catch (e) {
         // brak zapisanej kolejności
       }
       try {
         const d = await magazyn.czytaj(KLUCZ_DODANE);
-        if (d) setDodane({ A: [], B: [], ...JSON.parse(d) });
+        if (d) { wczytaneDodane = JSON.parse(d); setDodane({ A: [], B: [], ...wczytaneDodane }); }
       } catch (e) {
         // brak dodanych ćwiczeń
       }
       try {
         const n = await magazyn.czytaj(KLUCZ_PLAN);
-        if (n) setNadpisania(JSON.parse(n));
+        if (n) { wczytaneNadpisania = JSON.parse(n); setNadpisania(wczytaneNadpisania); }
       } catch (e) {
         // brak nadpisań planu
+      }
+      try {
+        const zapisane = await magazyn.czytaj(KLUCZ_PLANY);
+        if (zapisane) {
+          setPlany(JSON.parse(zapisane));
+        } else {
+          const zmigrowane = zbudujPlanyZMigracji(wczytaneNadpisania, wczytaneDodane, wczytanaKolejnosc);
+          setPlany(zmigrowane);
+          await magazyn.pisz(KLUCZ_PLANY, JSON.stringify(zmigrowane));
+        }
+      } catch (e) {
+        setPlany(zbudujPlanyZMigracji(wczytaneNadpisania, wczytaneDodane, wczytanaKolejnosc));
       }
       try {
         const m = await magazyn.czytaj(KLUCZ_MOTYW);
@@ -562,7 +609,7 @@ function DziennikTreningowy() {
     setSesje(noweSesje);
     const ok = await magazyn.pisz(KLUCZ, JSON.stringify(noweSesje));
     setAwaria(ok ? null : { szczegol: magazyn.szczegol });
-    wyslijDoGH(noweSesje, wskazowki, nadpisania, dodane, kolejnosc);
+    wyslijDoGH(noweSesje, wskazowki, nadpisania, dodane, kolejnosc, plany);
     return ok;
   };
 
@@ -570,36 +617,61 @@ function DziennikTreningowy() {
     const nowe = { ...wskazowki, [plan]: tekst };
     setWskazowki(nowe);
     await magazyn.pisz(KLUCZ_WSK, JSON.stringify(nowe));
-    wyslijDoGH(sesje, nowe, nadpisania, dodane, kolejnosc);
+    wyslijDoGH(sesje, nowe, nadpisania, dodane, kolejnosc, plany);
   };
 
-  const zapiszNadpisanie = async (cwId, pola) => {
-    const nowe = { ...nadpisania, [cwId]: { ...(nadpisania[cwId] || {}), ...pola } };
-    setNadpisania(nowe);
-    await magazyn.pisz(KLUCZ_PLAN, JSON.stringify(nowe));
-    wyslijDoGH(sesje, wskazowki, nowe, dodane, kolejnosc);
+  const zapiszPlany = async (nowe) => {
+    setPlany(nowe);
+    await magazyn.pisz(KLUCZ_PLANY, JSON.stringify(nowe));
+    wyslijDoGH(sesje, wskazowki, nadpisania, dodane, kolejnosc, nowe);
   };
 
-  const zapiszKolejnosc = async (plan, idki) => {
-    const nowe = { ...kolejnosc, [plan]: idki };
-    setKolejnosc(nowe);
-    await magazyn.pisz(KLUCZ_KOLEJNOSC, JSON.stringify(nowe));
-    wyslijDoGH(sesje, wskazowki, nadpisania, dodane, nowe);
+  const zmienCwiczenia = (planId, fn) => {
+    const p = plany.plany[planId];
+    if (!p) return;
+    zapiszPlany({ ...plany, plany: { ...plany.plany, [planId]: { ...p, cwiczenia: fn(p.cwiczenia) } } });
   };
 
-  const zapiszDodane = async (nowe) => {
-    setDodane(nowe);
-    await magazyn.pisz(KLUCZ_DODANE, JSON.stringify(nowe));
-    wyslijDoGH(sesje, wskazowki, nadpisania, nowe, kolejnosc);
+  const zapiszNadpisanie = (planId, cwId, pola) =>
+    zmienCwiczenia(planId, (lista) => lista.map((c) => (c.id === cwId ? { ...c, ...pola, zmienione: true } : c)));
+
+  const dodajCwiczenie = (planId, cwId) => {
+    const z = BAZA_MAPA[cwId];
+    if (!z) return;
+    zmienCwiczenia(planId, (lista) => (lista.some((c) => c.id === cwId) ? lista : [...lista, { ...z }]));
   };
 
-  const dodajCwiczenie = (plan, cwId) => {
-    if ((dodane[plan] || []).includes(cwId)) return;
-    zapiszDodane({ ...dodane, [plan]: [...(dodane[plan] || []), cwId] });
+  const usunCwiczenie = (planId, cwId) =>
+    zmienCwiczenia(planId, (lista) => lista.filter((c) => c.id !== cwId));
+
+  const zapiszKolejnosc = (planId, idki) =>
+    zmienCwiczenia(planId, (lista) => {
+      const mapa = Object.fromEntries(lista.map((c) => [c.id, c]));
+      return idki.map((x) => mapa[x]).filter(Boolean);
+    });
+
+  const zmienNazwePlanu = (planId, nazwa, akcent) => {
+    const p = plany.plany[planId];
+    if (!p) return;
+    zapiszPlany({ ...plany, plany: { ...plany.plany, [planId]: { ...p, nazwa, akcent } } });
   };
 
-  const usunCwiczenie = (plan, cwId) => {
-    zapiszDodane({ ...dodane, [plan]: (dodane[plan] || []).filter((x) => x !== cwId) });
+  const dodajPlan = () => {
+    const uzyte = plany.kolejnosc;
+    const litery = "ABCDEFGHIJ".split("").filter((l) => !uzyte.includes(l));
+    if (!litery.length) return;
+    const id = litery[0];
+    zapiszPlany({
+      ...plany,
+      kolejnosc: [...uzyte, id],
+      plany: { ...plany.plany, [id]: { id, nazwa: `Trening ${id}`, akcent: "", cwiczenia: [] } },
+    });
+  };
+
+  const usunPlan = (planId) => {
+    const reszta = { ...plany.plany };
+    delete reszta[planId];
+    zapiszPlany({ ...plany, kolejnosc: plany.kolejnosc.filter((x) => x !== planId), plany: reszta });
   };
 
   const zapiszKonfigGH = async (k) => {
@@ -609,7 +681,7 @@ function DziennikTreningowy() {
 
   const gotowyGH = (k) => k && k.token && k.wlasciciel && k.repo && k.sciezka;
 
-  const wyslijDoGH = async (noweSesje, noweWskazowki, noweNadpisania, noweDodane, nowaKolejnosc) => {
+  const wyslijDoGH = async (noweSesje, noweWskazowki, noweNadpisania, noweDodane, nowaKolejnosc, nowePlany) => {
     const k = konfigGH;
     if (!gotowyGH(k)) return;
     setStanGH({ etap: "praca", tekst: "wysyłam…" });
@@ -617,7 +689,7 @@ function DziennikTreningowy() {
       const obecne = await github.pobierz(k);
       await github.wyslij(
         k,
-        { wersja: WERSJA, zapisano: new Date().toISOString(), sesje: noweSesje, wskazowki: noweWskazowki, plan: noweNadpisania || nadpisania, dodane: noweDodane || dodane, kolejnosc: nowaKolejnosc || kolejnosc },
+        { wersja: WERSJA, zapisano: new Date().toISOString(), sesje: noweSesje, wskazowki: noweWskazowki, plan: noweNadpisania || nadpisania, dodane: noweDodane || dodane, kolejnosc: nowaKolejnosc || kolejnosc, plany: nowePlany || plany },
         obecne.istnieje ? obecne.sha : null
       );
       setStanGH({ etap: "ok", tekst: `wysłano ${new Date().toTimeString().slice(0, 5)}` });
@@ -640,6 +712,10 @@ function DziennikTreningowy() {
       if (Array.isArray(dane.sesje)) {
         setSesje(dane.sesje);
         await magazyn.pisz(KLUCZ, JSON.stringify(dane.sesje));
+      }
+      if (dane.plany && dane.plany.plany) {
+        setPlany(dane.plany);
+        await magazyn.pisz(KLUCZ_PLANY, JSON.stringify(dane.plany));
       }
       if (dane.kolejnosc) {
         const k = { A: [], B: [], ...dane.kolejnosc };
@@ -730,7 +806,7 @@ function DziennikTreningowy() {
         {<PasekAwarii rodzaj={rodzajZapisu} awaria={awaria} />}
 
         {widok === "start" && (
-          <Start sesje={sesje} wskazowki={wskazowki} stanGH={stanGH} konfigGH={konfigGH} ostatniaZPlanu={ostatniaZPlanu} rozpocznij={rozpocznij} setWidok={setWidok} />
+          <Start sesje={sesje} wskazowki={wskazowki} plany={plany} dodajPlan={dodajPlan} stanGH={stanGH} konfigGH={konfigGH} ostatniaZPlanu={ostatniaZPlanu} rozpocznij={rozpocznij} setWidok={setWidok} />
         )}
 
         {widok === "sesja" && aktywna && (
@@ -738,10 +814,10 @@ function DziennikTreningowy() {
             sesja={aktywna}
             setSesja={setAktywna}
             wskazowka={wskazowki[aktywna.plan] || ""}
-            nadpisania={nadpisania}
+            plany={plany}
+            zmienNazwePlanu={zmienNazwePlanu}
+            usunPlan={usunPlan}
             zapiszNadpisanie={zapiszNadpisanie}
-            dodane={dodane[aktywna.plan] || []}
-            kolejnosc={kolejnosc[aktywna.plan] || []}
             zapiszKolejnosc={zapiszKolejnosc}
             dodajCwiczenie={dodajCwiczenie}
             usunCwiczenie={usunCwiczenie}
@@ -752,15 +828,15 @@ function DziennikTreningowy() {
           />
         )}
 
-        {widok === "historia" && <Historia sesje={sesje} usunSesje={usunSesje} setWidok={setWidok} />}
+        {widok === "historia" && <Historia sesje={sesje} plany={plany} usunSesje={usunSesje} setWidok={setWidok} />}
 
-        {widok === "import" && <Import dodajSesje={dodajSesje} setWidok={setWidok} />}
+        {widok === "import" && <Import dodajSesje={dodajSesje} plany={plany} setWidok={setWidok} />}
 
         {widok === "chmura" && (
           <Chmura
             konfig={konfigGH}
             zapiszKonfig={zapiszKonfigGH}
-            wyslij={() => wyslijDoGH(sesje, wskazowki, nadpisania, dodane, kolejnosc)}
+            wyslij={() => wyslijDoGH(sesje, wskazowki, nadpisania, dodane, kolejnosc, plany)}
             pobierz={pobierzZGH}
             stan={stanGH}
             sesje={sesje}
@@ -897,12 +973,13 @@ function Naglowek({ widok, setWidok, liczba, motyw, zmienMotyw }) {
 /* ---------------------------------------------------------------
    EKRAN STARTOWY
    --------------------------------------------------------------- */
-function Start({ sesje, wskazowki, stanGH, konfigGH, ostatniaZPlanu, rozpocznij, setWidok }) {
+function Start({ sesje, wskazowki, plany, dodajPlan, stanGH, konfigGH, ostatniaZPlanu, rozpocznij, setWidok }) {
   return (
     <div style={{ padding: "0 16px" }}>
-      {["A", "B"].map((plan) => {
+      {plany.kolejnosc.map((plan) => {
         const ost = ostatniaZPlanu(plan);
-        const p = PLANY[plan];
+        const p = plany.plany[plan];
+        if (!p) return null;
         const wsk = (wskazowki || {})[plan];
         return (
           <button
@@ -931,6 +1008,19 @@ function Start({ sesje, wskazowki, stanGH, konfigGH, ostatniaZPlanu, rozpocznij,
           </button>
         );
       })}
+
+      <button
+        onClick={dodajPlan}
+        className="dt-focus"
+        style={{
+          ...mono, display: "flex", alignItems: "center", justifyContent: "center", gap: 9,
+          background: C.pole, border: `1px solid ${C.signal}`, color: C.signal,
+          fontSize: 12.5, fontWeight: 700, letterSpacing: "0.09em",
+          padding: "14px 0", width: "100%", cursor: "pointer",
+        }}
+      >
+        <span style={{ fontSize: 17, lineHeight: 1, fontWeight: 400 }}>+</span> DODAJ TRENING
+      </button>
 
       {sesje.length > 0 && (
         <div style={{ marginTop: 26 }}>
@@ -1030,20 +1120,13 @@ function Stoper({ przerwa, przerwaPo }) {
 /* ---------------------------------------------------------------
    SESJA TRENINGOWA
    --------------------------------------------------------------- */
-function Sesja({ sesja, setSesja, wskazowka, zapiszWskazowki, nadpisania, zapiszNadpisanie, dodane, dodajCwiczenie, usunCwiczenie, kolejnosc, zapiszKolejnosc, ostatnieDlaCwiczenia, zapiszSesje, anuluj }) {
-  const plan = PLANY[sesja.plan];
+function Sesja({ sesja, setSesja, wskazowka, zapiszWskazowki, plany, zmienNazwePlanu, usunPlan, zapiszNadpisanie, dodajCwiczenie, usunCwiczenie, zapiszKolejnosc, ostatnieDlaCwiczenia, zapiszSesje, anuluj }) {
+  const plan = plany.plany[sesja.plan] || { nazwa: sesja.plan, cwiczenia: [] };
   const [pokazWybierak, setPokazWybierak] = useState(false);
-  const bazowe = [
-    ...plan.cwiczenia,
-    ...dodane.map((id) => BAZA_MAPA[id]).filter(Boolean),
-  ];
-  const cwiczeniaSesji = (() => {
-    if (!kolejnosc.length) return bazowe;
-    const mapa = Object.fromEntries(bazowe.map((c) => [c.id, c]));
-    const ulozone = kolejnosc.map((id) => mapa[id]).filter(Boolean);
-    const brakujace = bazowe.filter((c) => !kolejnosc.includes(c.id));
-    return [...ulozone, ...brakujace];
-  })();
+  const [edycjaNazwy, setEdycjaNazwy] = useState(false);
+  const [roboczaNazwa, setRoboczaNazwa] = useState("");
+  const [potwierdzUsuniecie, setPotwierdzUsuniecie] = useState(false);
+  const cwiczeniaSesji = plan.cwiczenia;
 
   const przesun = (i, kierunek) => {
     const j = i + kierunek;
@@ -1143,7 +1226,32 @@ function Sesja({ sesja, setSesja, wskazowka, zapiszWskazowki, nadpisania, zapisz
   return (
     <div style={{ padding: "0 16px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
-        <h2 style={{ ...display, margin: 0, fontSize: 27, fontWeight: 700, textTransform: "uppercase" }}>{plan.nazwa}</h2>
+        {edycjaNazwy ? (
+          <span style={{ display: "flex", gap: 6, alignItems: "center", flex: 1 }}>
+            <input
+              value={roboczaNazwa}
+              onChange={(e) => setRoboczaNazwa(e.target.value)}
+              className="dt-focus"
+              style={{ ...body, flex: 1, minWidth: 0, background: C.pole, border: `1px solid ${C.line}`, padding: "8px 9px", fontSize: 16, color: C.ink }}
+            />
+            <button
+              onClick={() => { zmienNazwePlanu(sesja.plan, roboczaNazwa.trim() || plan.nazwa, plan.akcent); setEdycjaNazwy(false); }}
+              className="dt-focus"
+              style={{ ...mono, background: "none", border: `1px solid ${C.ok}`, color: C.ok, fontSize: 13, padding: "8px 12px", cursor: "pointer", fontWeight: 700 }}
+            >
+              ✓
+            </button>
+          </span>
+        ) : (
+          <button
+            onClick={() => { setRoboczaNazwa(plan.nazwa); setEdycjaNazwy(true); }}
+            className="dt-focus"
+            style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: "none", padding: 0, cursor: "pointer", textAlign: "left" }}
+          >
+            <h2 style={{ ...display, margin: 0, fontSize: 27, fontWeight: 700, textTransform: "uppercase", color: C.ink }}>{plan.nazwa}</h2>
+            <span style={{ ...mono, fontSize: 15, color: C.steel, border: `1px solid ${C.line}`, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center" }}>✎</span>
+          </button>
+        )}
         <button onClick={anuluj} className="dt-focus" style={{ ...mono, background: "none", border: "none", color: C.steel, fontSize: 12, cursor: "pointer", padding: 4 }}>
           ✕ WYJDŹ
         </button>
@@ -1159,9 +1267,7 @@ function Sesja({ sesja, setSesja, wskazowka, zapiszWskazowki, nadpisania, zapisz
           key={cw.id}
           numer={i + 1}
           cw={cw}
-          nadpisanie={nadpisania[cw.id]}
-          zapiszNadpisanie={zapiszNadpisanie}
-          dodatkowe={dodane.includes(cw.id)}
+          zapiszNadpisanie={(cwId, pola) => zapiszNadpisanie(sesja.plan, cwId, pola)}
           wGore={i > 0 ? () => przesun(i, -1) : null}
           wDol={i < cwiczeniaSesji.length - 1 ? () => przesun(i, 1) : null}
           usunZPlanu={() => usunCwiczenie(sesja.plan, cw.id)}
@@ -1187,9 +1293,28 @@ function Sesja({ sesja, setSesja, wskazowka, zapiszWskazowki, nadpisania, zapisz
         <span style={{ fontSize: 17, lineHeight: 1, fontWeight: 400 }}>+</span> DODAJ ĆWICZENIE
       </button>
 
+      <button
+        onClick={() => {
+          if (!potwierdzUsuniecie) { setPotwierdzUsuniecie(true); return; }
+          usunPlan(sesja.plan);
+          anuluj();
+        }}
+        className="dt-focus"
+        style={{
+          ...mono, width: "100%", marginBottom: 22, padding: "12px 0", cursor: "pointer",
+          fontSize: 11, letterSpacing: "0.06em",
+          background: potwierdzUsuniecie ? C.hot : "none",
+          border: `1px solid ${potwierdzUsuniecie ? C.hot : C.line}`,
+          color: potwierdzUsuniecie ? C.paper : C.steel,
+          fontWeight: potwierdzUsuniecie ? 700 : 400,
+        }}
+      >
+        {potwierdzUsuniecie ? "STUKNIJ PONOWNIE, ABY USUNĄĆ CAŁY TRENING" : "USUŃ TEN TRENING Z PLANU"}
+      </button>
+
       {pokazWybierak && (
         <Wybierak
-          juzWPlanie={[...plan.cwiczenia.map((c) => c.id), ...dodane]}
+          juzWPlanie={plan.cwiczenia.map((c) => c.id)}
           nazwyWPlanie={plan.cwiczenia.map((c) => c.nazwa)}
           wybierz={(id) => { dodajCwiczenie(sesja.plan, id); setPokazWybierak(false); }}
           zamknij={() => setPokazWybierak(false)}
@@ -1419,12 +1544,12 @@ function Rozgrzewka({ zaznaczone, przelacz }) {
 /* ---------------------------------------------------------------
    POJEDYNCZE ĆWICZENIE
    --------------------------------------------------------------- */
-function Cwiczenie({ numer, cw, nadpisanie, zapiszNadpisanie, dodatkowe, usunZPlanu, wGore, wDol, wpis, ustawSerie, przelaczStrony, dodajSerie, usunSerie, ostatnie }) {
+function Cwiczenie({ numer, cw, zapiszNadpisanie, usunZPlanu, wGore, wDol, wpis, ustawSerie, przelaczStrony, dodajSerie, usunSerie, ostatnie }) {
   const serie = wpis.serie || [];
   const [edycjaCelu, setEdycjaCelu] = useState(false);
   const [pokazOpis, setPokazOpis] = useState(false);
-  const celSerie = (nadpisanie && nadpisanie.serie) || cw.serie;
-  const celZakres = (nadpisanie && nadpisanie.zakres) || cw.zakres;
+  const celSerie = cw.serie;
+  const celZakres = cw.zakres;
   const [roboczySerie, setRoboczySerie] = useState(String(celSerie));
   const [roboczyZakres, setRoboczyZakres] = useState(celZakres);
   const ileWierszy = celSerie + (wpis.dodatkowe || 0);
@@ -1514,7 +1639,7 @@ function Cwiczenie({ numer, cw, nadpisanie, zapiszNadpisanie, dodatkowe, usunZPl
                   <div style={{ fontSize: 13, lineHeight: 1.55, color: C.ink }}>{cw.uwaga}</div>
                 </>
               )}
-              {dodatkowe && (
+              {usunZPlanu && (
                 <button
                   onClick={usunZPlanu}
                   className="dt-focus"
@@ -1560,8 +1685,8 @@ function Cwiczenie({ numer, cw, nadpisanie, zapiszNadpisanie, dodatkowe, usunZPl
             >
               <span
                 style={{
-                  fontSize: 19, lineHeight: 1, color: nadpisanie ? C.signal : C.steel,
-                  border: `1px solid ${nadpisanie ? C.signal : C.line}`,
+                  fontSize: 19, lineHeight: 1, color: cw.zmienione ? C.signal : C.steel,
+                  border: `1px solid ${cw.zmienione ? C.signal : C.line}`,
                   width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
                 }}
               >
@@ -1751,14 +1876,14 @@ function Pole({ wartosc, zmien, jedn, duch }) {
 /* ---------------------------------------------------------------
    IMPORT Z TEKSTU
    --------------------------------------------------------------- */
-function Import({ dodajSesje, setWidok }) {
+function Import({ dodajSesje, plany, setWidok }) {
   const [tekst, setTekst] = useState("");
   const [plan, setPlan] = useState("A");
   const [data, setData] = useState(dzis());
   const [status, setStatus] = useState(null);
 
   const parsuj = () => {
-    const cwiczenia = PLANY[plan].cwiczenia;
+    const cwiczenia = (plany.plany[plan] || {}).cwiczenia || [];
     const wpisy = {};
     let znalezione = 0;
     let notatka = "";
@@ -2036,7 +2161,7 @@ function Chmura({ konfig, zapiszKonfig, wyslij, pobierz, stan, sesje, wskazowki 
 /* ---------------------------------------------------------------
    HISTORIA
    --------------------------------------------------------------- */
-function Historia({ sesje, usunSesje, setWidok }) {
+function Historia({ sesje, plany, usunSesje, setWidok }) {
   const [rozwiniete, setRozwiniete] = useState(null);
   const [doUsuniecia, setDoUsuniecia] = useState(null);
 
@@ -2056,7 +2181,7 @@ function Historia({ sesje, usunSesje, setWidok }) {
   return (
     <div style={{ padding: "0 16px" }}>
       {sesje.map((s) => {
-        const plan = PLANY[s.plan];
+        const plan = plany.plany[s.plan];
         if (!plan) return null;
         const otwarte = rozwiniete === s.id;
         const dane = plan.cwiczenia
