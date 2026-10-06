@@ -211,7 +211,7 @@ const KLUCZ_GH = "dziennik:github";
 const KLUCZ_MOTYW = "dziennik:motyw";
 const KLUCZ_PLAN = "dziennik:plan";
 
-const WERSJA = "4.3";
+const WERSJA = "4.4";
 const DATA_WERSJI = "2026-10-05";
 
 /* ---------------------------------------------------------------
@@ -322,11 +322,69 @@ const opisSerii = (cw, s, strony) => {
   return jedna(s.w, s.p);
 };
 
+const krotkaData = (d) => {
+  const data = new Date(d);
+  return `${data.getDate()}.${data.getMonth() + 1}`;
+};
+
 const topSeria = (serie) => {
   const wazne = (serie || []).filter((s) => s && s.w !== "" && s.w != null);
   if (!wazne.length) return null;
   return wazne.reduce((a, b) => (parseFloat(b.w) > parseFloat(a.w) ? b : a));
 };
+
+
+/* ---------------------------------------------------------------
+   POSTĘP — przypisanie grup i liczenie
+   --------------------------------------------------------------- */
+const GRUPA_PLANU = {
+  a1: "klatka-gora", a2: "klatka-gora", a3: "plecy-szerokosc", a4: "plecy-szerokosc",
+  a5: "triceps", a6: "gorset", a7: "gorset", a8: "plecy-grubosc", a9: "biceps",
+  b1: "klatka-gora", b8: "klatka-srodek", b2: "barki", b3: "barki", b4: "nogi",
+  b9: "triceps", b12: "plecy-grubosc", b10: "gorset", b11: "gorset",
+};
+
+const grupaCwiczenia = (cw) =>
+  cw.grupa || GRUPA_PLANU[cw.id] || (BAZA_MAPA[cw.id] || {}).grupa || null;
+
+const nazwaGrupy = (id) => (GRUPY.find((g) => g.id === id) || {}).nazwa || id;
+
+/* objętość serii: ciężar × powtórzenia; gdy ćwiczenie jest bez ciężaru,
+   liczymy same powtórzenia lub sekundy */
+const objetoscSerii = (s) => {
+  if (!s) return 0;
+  const w = parseFloat(String(s.w).replace(",", "."));
+  const pw = parseFloat(String(s.p).replace(",", "."));
+  if (Number.isFinite(w) && Number.isFinite(pw)) return w * pw;
+  if (Number.isFinite(pw)) return pw;
+  if (Number.isFinite(w)) return w;
+  return 0;
+};
+
+const objetoscCwiczenia = (wpis) =>
+  ((wpis || {}).serie || []).reduce((suma, s) => suma + objetoscSerii(s), 0);
+
+const serieRobocze = (wpis) =>
+  ((wpis || {}).serie || []).filter((s) => s && (s.w !== "" && s.w != null) || (s && s.p !== "" && s.p != null)).length;
+
+/* historia jednego ćwiczenia: [{data, ciezar, objetosc}] od najstarszej */
+const historiaCwiczenia = (sesje, cwId) =>
+  [...sesje]
+    .sort((a, b) => new Date(a.data) - new Date(b.data))
+    .map((ses) => {
+      const wpis = (ses.wpisy || {})[cwId];
+      if (!wpis) return null;
+      const top = topSeria(wpis.serie);
+      const serie = (wpis.serie || []).filter((x) => x && (x.w || x.p));
+      if (!serie.length) return null;
+      const ciezar = top ? parseFloat(String(top.w).replace(",", ".")) : null;
+      return {
+        data: ses.data,
+        ciezar: Number.isFinite(ciezar) ? ciezar : null,
+        objetosc: Math.round(objetoscCwiczenia(wpis)),
+      };
+    })
+    .filter(Boolean);
 
 /* ---------------------------------------------------------------
    ROZPOZNAWANIE LICZB PO POLSKU
@@ -825,6 +883,7 @@ function DziennikTreningowy() {
             sesja={aktywna}
             setSesja={setAktywna}
             wskazowka={wskazowki[aktywna.plan] || ""}
+            wszystkieSesje={sesje}
             plany={plany}
             zmienNazwePlanu={zmienNazwePlanu}
             usunPlan={usunPlan}
@@ -839,6 +898,7 @@ function DziennikTreningowy() {
           />
         )}
 
+        {widok === "postep" && <Postep sesje={sesje} plany={plany} setWidok={setWidok} />}
         {widok === "historia" && <Historia sesje={sesje} plany={plany} usunSesje={usunSesje} edytujSesje={edytujSesje} setWidok={setWidok} />}
 
         {widok === "import" && <Import dodajSesje={dodajSesje} plany={plany} setWidok={setWidok} />}
@@ -959,7 +1019,7 @@ function Naglowek({ widok, setWidok, liczba, motyw, zmienMotyw }) {
       </div>
       {widok !== "sesja" && (
         <div style={{ display: "flex", gap: 14, marginTop: 10 }}>
-          {[["start", "Trening"], ["historia", "Historia"], ["import", "Wklej"], ["chmura", "Kopia"]].map(([k, etykieta]) => (
+          {[["start", "Trening"], ["historia", "Historia"], ["postep", "Postęp"], ["import", "Wklej"], ["chmura", "Kopia"]].map(([k, etykieta]) => (
             <button
               key={k}
               onClick={() => setWidok(k)}
@@ -1131,7 +1191,7 @@ function Stoper({ przerwa, przerwaPo }) {
 /* ---------------------------------------------------------------
    SESJA TRENINGOWA
    --------------------------------------------------------------- */
-function Sesja({ sesja, setSesja, wskazowka, zapiszWskazowki, plany, zmienNazwePlanu, usunPlan, zapiszNadpisanie, dodajCwiczenie, usunCwiczenie, zapiszKolejnosc, ostatnieDlaCwiczenia, zapiszSesje, anuluj }) {
+function Sesja({ sesja, setSesja, wskazowka, zapiszWskazowki, wszystkieSesje, plany, zmienNazwePlanu, usunPlan, zapiszNadpisanie, dodajCwiczenie, usunCwiczenie, zapiszKolejnosc, ostatnieDlaCwiczenia, zapiszSesje, anuluj }) {
   const plan = plany.plany[sesja.plan] || { nazwa: sesja.plan, cwiczenia: [] };
   const [pokazWybierak, setPokazWybierak] = useState(false);
   const [edycjaNazwy, setEdycjaNazwy] = useState(false);
@@ -1279,6 +1339,7 @@ function Sesja({ sesja, setSesja, wskazowka, zapiszWskazowki, plany, zmienNazweP
           numer={i + 1}
           cw={cw}
           zapiszNadpisanie={(cwId, pola) => zapiszNadpisanie(sesja.plan, cwId, pola)}
+          historia={historiaCwiczenia(wszystkieSesje, cw.id)}
           ostatnieWPlanie={i === cwiczeniaSesji.length - 1}
           wGore={i > 0 ? () => przesun(i, -1) : null}
           wDol={i < cwiczeniaSesji.length - 1 ? () => przesun(i, 1) : null}
@@ -1556,7 +1617,7 @@ function Rozgrzewka({ zaznaczone, przelacz }) {
 /* ---------------------------------------------------------------
    POJEDYNCZE ĆWICZENIE
    --------------------------------------------------------------- */
-function Cwiczenie({ numer, cw, zapiszNadpisanie, usunZPlanu, ostatnieWPlanie, wGore, wDol, wpis, ustawSerie, przelaczStrony, dodajSerie, usunSerie, ostatnie }) {
+function Cwiczenie({ numer, cw, zapiszNadpisanie, usunZPlanu, historia, ostatnieWPlanie, wGore, wDol, wpis, ustawSerie, przelaczStrony, dodajSerie, usunSerie, ostatnie }) {
   const serie = wpis.serie || [];
   const [edycjaCelu, setEdycjaCelu] = useState(false);
   const [pokazOpis, setPokazOpis] = useState(false);
@@ -1651,6 +1712,20 @@ function Cwiczenie({ numer, cw, zapiszNadpisanie, usunZPlanu, ostatnieWPlanie, w
                   <div style={{ fontSize: 13, lineHeight: 1.55, color: C.ink }}>{cw.uwaga}</div>
                 </>
               )}
+              {historia && historia.length >= 2 && (
+                <>
+                  <div style={{ ...mono, fontSize: 10, color: C.signal, letterSpacing: "0.08em", margin: "13px 0 2px" }}>POSTĘP</div>
+                  <WykresLiniowy
+                    serie={[
+                      { nazwa: "ciężar", kolor: C.signal, punkty: historia.map((h) => h.ciezar) },
+                      { nazwa: "objętość", kolor: C.ok, punkty: historia.map((h) => h.objetosc) },
+                    ]}
+                    etykiety={historia.map((h) => krotkaData(h.data))}
+                  />
+                  <Legenda serie={[{ nazwa: "ciężar", kolor: C.signal }, { nazwa: "objętość (kg × powt.)", kolor: C.ok }]} />
+                </>
+              )}
+
               {usunZPlanu && (
                 <button
                   onClick={usunZPlanu}
@@ -2389,6 +2464,232 @@ function Wybierak({ juzWPlanie, nazwyWPlanie, wybierz, zamknij }) {
           })}
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------
+   WYKRESY — rysowane jako SVG, bez zewnętrznych bibliotek
+   --------------------------------------------------------------- */
+function WykresLiniowy({ serie, wysokosc = 130, etykiety = [] }) {
+  const widoczne = serie.filter((s) => s.punkty.some((p) => Number.isFinite(p)));
+  if (!widoczne.length) return null;
+
+  const dlugosc = Math.max(...widoczne.map((s) => s.punkty.length));
+  if (dlugosc < 2) {
+    return (
+      <div style={{ ...mono, fontSize: 11, color: C.steel, padding: "14px 0" }}>
+        ZA MAŁO DANYCH — POTRZEBNE CO NAJMNIEJ DWIE SESJE
+      </div>
+    );
+  }
+
+  const W = 320, H = wysokosc, L = 34, R = 8, G = 10, D = 20;
+  const wszystkie = widoczne.flatMap((s) => s.punkty.filter(Number.isFinite));
+  let min = Math.min(...wszystkie), max = Math.max(...wszystkie);
+  if (min === max) { min -= 1; max += 1; }
+  const zapas = (max - min) * 0.12;
+  min -= zapas; max += zapas;
+
+  const x = (i) => L + (i * (W - L - R)) / (dlugosc - 1);
+  const y = (v) => G + (H - G - D) * (1 - (v - min) / (max - min));
+
+  const sciezka = (punkty) => {
+    let d = "", otwarte = false;
+    punkty.forEach((v, i) => {
+      if (!Number.isFinite(v)) { otwarte = false; return; }
+      d += `${otwarte ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)} `;
+      otwarte = true;
+    });
+    return d.trim();
+  };
+
+  const okraglo = (v) => (Math.abs(v) >= 100 ? Math.round(v) : Math.round(v * 10) / 10);
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", display: "block" }}>
+      {[0, 0.5, 1].map((u) => {
+        const wart = min + (max - min) * (1 - u);
+        const yy = G + (H - G - D) * u;
+        return (
+          <g key={u}>
+            <line x1={L} y1={yy} x2={W - R} y2={yy} stroke={C.line} strokeWidth="1" />
+            <text x={L - 5} y={yy + 3} textAnchor="end" fill={C.steel} fontSize="8" fontFamily="monospace">
+              {okraglo(wart)}
+            </text>
+          </g>
+        );
+      })}
+
+      {widoczne.map((s) => (
+        <path key={s.nazwa} d={sciezka(s.punkty)} fill="none" stroke={s.kolor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      ))}
+      {widoczne.map((s) =>
+        s.punkty.map((v, i) =>
+          Number.isFinite(v) ? <circle key={`${s.nazwa}-${i}`} cx={x(i)} cy={y(v)} r="2.6" fill={s.kolor} /> : null
+        )
+      )}
+
+      {etykiety.map((e, i) =>
+        i === 0 || i === etykiety.length - 1 ? (
+          <text key={i} x={x(i)} y={H - 6} textAnchor={i === 0 ? "start" : "end"} fill={C.steel} fontSize="8" fontFamily="monospace">
+            {e}
+          </text>
+        ) : null
+      )}
+    </svg>
+  );
+}
+
+function Legenda({ serie }) {
+  return (
+    <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginTop: 6 }}>
+      {serie.map((s) => (
+        <span key={s.nazwa} style={{ ...mono, fontSize: 9.5, color: C.steel, display: "flex", alignItems: "center", gap: 5 }}>
+          <span style={{ width: 14, height: 2.5, background: s.kolor, display: "inline-block" }} />
+          {s.nazwa}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function WykresSlupkowy({ pozycje, wysokosc = 150 }) {
+  if (!pozycje.length) return null;
+  const max = Math.max(...pozycje.map((p) => p.wartosc), 1);
+  return (
+    <div style={{ marginTop: 4 }}>
+      {pozycje.map((p) => (
+        <div key={p.nazwa} style={{ marginBottom: 7 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
+            <span style={{ ...mono, fontSize: 10, color: C.inkSoft }}>{p.nazwa.toUpperCase()}</span>
+            <span style={{ ...mono, fontSize: 10, color: C.steel }}>{p.wartosc}</span>
+          </div>
+          <div style={{ height: 7, background: C.pole, border: `1px solid ${C.line}` }}>
+            <div style={{ height: "100%", width: `${(p.wartosc / max) * 100}%`, background: p.kolor || C.signal }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------
+   EKRAN POSTĘPU
+   --------------------------------------------------------------- */
+function Postep({ sesje, plany, setWidok }) {
+  const [sekcja, setSekcja] = useState("treningi");
+
+  const posortowane = [...sesje].sort((a, b) => new Date(a.data) - new Date(b.data));
+
+  const objetoscSesji = (ses) =>
+    Math.round(Object.values(ses.wpisy || {}).reduce((s, w) => s + objetoscCwiczenia(w), 0));
+
+  const planyIdki = plany.kolejnosc;
+  const kolory = [C.signal, C.ok, C.hot, "#7C9CC4"];
+
+  const serieTreningow = planyIdki.map((id, i) => {
+    const punkty = posortowane.map((ses) => (ses.plan === id ? objetoscSesji(ses) : NaN));
+    return { nazwa: (plany.plany[id] || {}).nazwa || id, kolor: kolory[i % kolory.length], punkty };
+  });
+
+  // serie robocze na partię, ostatnie 4 tygodnie
+  const granica = new Date();
+  granica.setDate(granica.getDate() - 28);
+  const wostatnich = posortowane.filter((s) => new Date(s.data) >= granica);
+
+  const licznik = {};
+  wostatnich.forEach((ses) => {
+    const plan = plany.plany[ses.plan];
+    if (!plan) return;
+    plan.cwiczenia.forEach((cw) => {
+      const g = grupaCwiczenia(cw);
+      if (!g) return;
+      licznik[g] = (licznik[g] || 0) + serieRobocze((ses.wpisy || {})[cw.id]);
+    });
+  });
+
+  const partie = GRUPY.map((g) => ({ nazwa: g.nazwa, wartosc: licznik[g.id] || 0 }))
+    .filter((p) => p.wartosc > 0)
+    .sort((a, b) => b.wartosc - a.wartosc);
+
+  // bilans pchania do ciągnięcia
+  const pchanie = ["klatka-gora", "klatka-srodek", "barki", "triceps"].reduce((s, g) => s + (licznik[g] || 0), 0);
+  const ciagniecie = ["plecy-szerokosc", "plecy-grubosc", "biceps"].reduce((s, g) => s + (licznik[g] || 0), 0);
+
+  const zakladka = (id, etykieta) => (
+    <button
+      key={id}
+      onClick={() => setSekcja(id)}
+      className="dt-focus"
+      style={{
+        ...mono, flex: 1, padding: "10px 0", cursor: "pointer", fontSize: 11, fontWeight: 700, letterSpacing: "0.06em",
+        background: sekcja === id ? C.signal : "none",
+        border: `1px solid ${sekcja === id ? C.signal : C.line}`,
+        color: sekcja === id ? C.paper : C.steel,
+      }}
+    >
+      {etykieta}
+    </button>
+  );
+
+  return (
+    <div style={{ padding: "0 16px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 14 }}>
+        <h2 style={{ ...display, margin: 0, fontSize: 27, fontWeight: 700, textTransform: "uppercase" }}>Postęp</h2>
+        <button onClick={() => setWidok("start")} className="dt-focus" style={{ ...mono, background: "none", border: "none", color: C.steel, fontSize: 12, cursor: "pointer", padding: 4 }}>
+          ✕ WYJDŹ
+        </button>
+      </div>
+
+      {sesje.length < 2 ? (
+        <div style={{ ...mono, fontSize: 12, color: C.steel, padding: "24px 0" }}>
+          ZA MAŁO DANYCH — POTRZEBNE CO NAJMNIEJ DWIE SESJE
+        </div>
+      ) : (
+        <>
+          <div style={{ display: "flex", gap: 7, marginBottom: 18 }}>
+            {zakladka("treningi", "TRENINGI")}
+            {zakladka("partie", "PARTIE")}
+          </div>
+
+          {sekcja === "treningi" && (
+            <>
+              <div style={{ ...mono, fontSize: 10.5, color: C.steel, marginBottom: 8 }}>
+                OBJĘTOŚĆ SESJI (KG × POWT.)
+              </div>
+              <WykresLiniowy serie={serieTreningow} wysokosc={150} etykiety={posortowane.map((s) => krotkaData(s.data))} />
+              <Legenda serie={serieTreningow.map((s) => ({ nazwa: s.nazwa, kolor: s.kolor }))} />
+              <div style={{ fontSize: 12.5, color: C.steel, lineHeight: 1.5, marginTop: 14 }}>
+                Objętość sumuje ciężar razy powtórzenia ze wszystkich serii. Ćwiczenia na nogi ważą tu
+                najwięcej, więc skok w tej partii podnosi cały wykres.
+              </div>
+            </>
+          )}
+
+          {sekcja === "partie" && (
+            <>
+              <div style={{ ...mono, fontSize: 10.5, color: C.steel, marginBottom: 10 }}>
+                SERIE ROBOCZE — OSTATNIE 4 TYGODNIE
+              </div>
+              <WykresSlupkowy pozycje={partie} />
+
+              <div style={{ marginTop: 20, paddingTop: 14, borderTop: `1px solid ${C.line}` }}>
+                <div style={{ ...mono, fontSize: 10.5, color: C.steel, marginBottom: 10 }}>BILANS PCHANIE / CIĄGNIĘCIE</div>
+                <WykresSlupkowy
+                  pozycje={[
+                    { nazwa: "Pchanie", wartosc: pchanie, kolor: C.hot },
+                    { nazwa: "Ciągnięcie", wartosc: ciagniecie, kolor: C.ok },
+                  ]}
+                />
+                <div style={{ fontSize: 12.5, color: C.steel, lineHeight: 1.5, marginTop: 10 }}>
+                  Przewaga pchania obciąża przednią część barku. Im bliżej równowagi, tym lepiej.
+                </div>
+              </div>
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 }
