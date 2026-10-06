@@ -211,7 +211,7 @@ const KLUCZ_GH = "dziennik:github";
 const KLUCZ_MOTYW = "dziennik:motyw";
 const KLUCZ_PLAN = "dziennik:plan";
 
-const WERSJA = "4.4";
+const WERSJA = "4.5";
 const DATA_WERSJI = "2026-10-05";
 
 /* ---------------------------------------------------------------
@@ -2484,49 +2484,62 @@ function WykresLiniowy({ serie, wysokosc = 130, etykiety = [] }) {
     );
   }
 
-  const W = 320, H = wysokosc, L = 34, R = 8, G = 10, D = 20;
-  const wszystkie = widoczne.flatMap((s) => s.punkty.filter(Number.isFinite));
-  let min = Math.min(...wszystkie), max = Math.max(...wszystkie);
-  if (min === max) { min -= 1; max += 1; }
-  const zapas = (max - min) * 0.12;
-  min -= zapas; max += zapas;
+  const W = 320, H = wysokosc, L = 34, R = 34, G = 10, D = 20;
+
+  /* każda seria ma własną skalę — inaczej ciężar (dziesiątki) zniknąłby
+     przy objętości (tysiące), a wspólny zapas schodziłby poniżej zera */
+  const zeSkala = widoczne.map((s) => {
+    const wartosci = s.punkty.filter(Number.isFinite);
+    let min = Math.min(...wartosci), max = Math.max(...wartosci);
+    if (min === max) { const d = Math.abs(min) * 0.1 || 1; min -= d; max += d; }
+    const zapas = (max - min) * 0.12;
+    min = Math.max(0, min - zapas);
+    max = max + zapas;
+    return { ...s, min, max };
+  });
 
   const x = (i) => L + (i * (W - L - R)) / (dlugosc - 1);
-  const y = (v) => G + (H - G - D) * (1 - (v - min) / (max - min));
+  const y = (v, sk) => G + (H - G - D) * (1 - (v - sk.min) / (sk.max - sk.min));
 
-  const sciezka = (punkty) => {
+  const sciezka = (sk) => {
     let d = "", otwarte = false;
-    punkty.forEach((v, i) => {
+    sk.punkty.forEach((v, i) => {
       if (!Number.isFinite(v)) { otwarte = false; return; }
-      d += `${otwarte ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)} `;
+      d += `${otwarte ? "L" : "M"}${x(i).toFixed(1)},${y(v, sk).toFixed(1)} `;
       otwarte = true;
     });
     return d.trim();
   };
 
   const okraglo = (v) => (Math.abs(v) >= 100 ? Math.round(v) : Math.round(v * 10) / 10);
+  const lewa = zeSkala[0];
+  const prawa = zeSkala[1];
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", display: "block" }}>
       {[0, 0.5, 1].map((u) => {
-        const wart = min + (max - min) * (1 - u);
         const yy = G + (H - G - D) * u;
         return (
           <g key={u}>
             <line x1={L} y1={yy} x2={W - R} y2={yy} stroke={C.line} strokeWidth="1" />
-            <text x={L - 5} y={yy + 3} textAnchor="end" fill={C.steel} fontSize="8" fontFamily="monospace">
-              {okraglo(wart)}
+            <text x={L - 5} y={yy + 3} textAnchor="end" fill={lewa.kolor} fontSize="8" fontFamily="monospace">
+              {okraglo(lewa.min + (lewa.max - lewa.min) * (1 - u))}
             </text>
+            {prawa && (
+              <text x={W - R + 5} y={yy + 3} textAnchor="start" fill={prawa.kolor} fontSize="8" fontFamily="monospace">
+                {okraglo(prawa.min + (prawa.max - prawa.min) * (1 - u))}
+              </text>
+            )}
           </g>
         );
       })}
 
-      {widoczne.map((s) => (
-        <path key={s.nazwa} d={sciezka(s.punkty)} fill="none" stroke={s.kolor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      {zeSkala.map((sk) => (
+        <path key={sk.nazwa} d={sciezka(sk)} fill="none" stroke={sk.kolor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
       ))}
-      {widoczne.map((s) =>
-        s.punkty.map((v, i) =>
-          Number.isFinite(v) ? <circle key={`${s.nazwa}-${i}`} cx={x(i)} cy={y(v)} r="2.6" fill={s.kolor} /> : null
+      {zeSkala.map((sk) =>
+        sk.punkty.map((v, i) =>
+          Number.isFinite(v) ? <circle key={`${sk.nazwa}-${i}`} cx={x(i)} cy={y(v, sk)} r="2.6" fill={sk.kolor} /> : null
         )
       )}
 
